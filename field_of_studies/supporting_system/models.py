@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Field_of_Study(models.Model):
     DEGREES = (
@@ -16,7 +17,7 @@ class Field_of_Study(models.Model):
     study_mode = models.CharField(max_length=15, choices=STUDY_MODE)
     language = models.CharField(max_length=20,default='Polski')
     university = models.ForeignKey("University", on_delete=models.CASCADE, to_field='id')
-    descritpion = models.TextField(max_length=1000)
+    description = models.TextField(max_length=1000)
     link_to_site = models.CharField(max_length=255, default='Brak linku do strony')
 
     def save(self, *args, **kwargs):
@@ -99,6 +100,7 @@ class Attribiutes(models.Model):
 class Characteristics(models.Model):
     field_of_study = models.ForeignKey('Field_of_Study', on_delete=models.CASCADE, to_field='id')
     attribiute = models.ForeignKey('Attribiutes',on_delete=models.CASCADE, to_field='id')
+    fit = models.FloatField(default=0.0, validators=[MinValueValidator(0.0), MaxValueValidator(1.0)])
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load tags %}
+{% block content %}
+
+<div class="jumbotron">
+    <h2 class="display-4">Dodaj kierunek studiów</h2>
+    <p class="lead">Dodaj nowy kierunek studiów do bazy danych. Każde pole musi zostać wypełnione</p>
+    <hr class="my-4">
+</div>
+
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-row">
+        <div class="col"><label>Kierunek studiów</label></div>
+        <div class="col">{{ form.name }}</div>
+        
+    </div>
+    <div class="form-row">
+        <div class="col"><label>Stopień studiów</label></div>
+        <div class="col">{{ form.degree }}</div>
+    </div>
+    <div class="form-row">
+        <div class="col"><label>Język studiów</label></div>
+        <div class="col">{{ form.language }}</div>
+    </div>
+    <div class="form-row">
+        <div class="col"><label>Uczelnia</label></div>
+        <div class="col">{{ form.university }}</div>
+    </div>
+    <div class="form-row">
+        <div class="col"><label>Link do strony</label></div>
+        <div class="col">{{ form.link_to_site }}</div>
+    </div>
+    <div class="form-row">
+        <div class="col"><label>Opis</label></div>
+        <div class="col">{{ form.description }}</div>
+    </div>
+    <div class="btn-group-justified">
+        <button type="submit" class="btn btn-primary" name="another">Zapisz i dodaj kolejny</button>
+        <button type="submit" class="btn btn-success" name="save">Zapisz i wróć</button>
+    </div>
+</form>
+{% endblock %}

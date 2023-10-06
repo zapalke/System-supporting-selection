@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load tags %}
+{% block content %}
+<div class="jumbotron">
+    <h2 class="display-4">BŁĄD</h2>
+    <p class="lead">Przy dodawaniu kierunku studiów wystąpił błąd. {{ obj.name }} już istnieje w bazie danych.</p>
+    <hr class="my-4">
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col">
+
+        </div>
+        <div class="col">
+            Obecny kierunek
+        </div>
+        <div class="col">
+            Nowy kierunek
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            Stopień
+        </div>
+        <div class="col">
+            {{ obj.degree }}
+        </div>
+        <div class="col">
+            {{ new_obj.degree }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            Rodzaj
+        </div>
+        <div class="col">
+            {{ obj.study_mode }}
+        </div>
+        <div class="col">
+            {{ new_obj.study_mode }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            Język
+        </div>
+        <div class="col">
+            {{ obj.language }}
+        </div>
+        <div class="col">
+            {{ new_obj.language }}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -36,3 +36,15 @@ class AddUniversityForm(forms.ModelForm):
         
     def __init__(self, *args, **kwargs):
         super(AddUniversityForm, self).__init__(*args, **kwargs)
+
+class AddFieldForm(forms.ModelForm):
+    class Meta:
+        model = Field_of_Study
+        fields = ('name','degree', 'study_mode', 'language','university','link_to_site','description')
+
+    def clean_module(self):
+        if self.cleaned_data['name'] in Field_of_Study.objects.values_list('name',flat=True):
+            raise ValidationError(self.fields['name'].error_messages['invalid'])
+        
+    def __init__(self, *args, **kwargs):
+        super(AddFieldForm, self).__init__(*args, **kwargs)
