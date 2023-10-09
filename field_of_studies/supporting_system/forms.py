@@ -5,27 +5,12 @@ from django.core.files.base import File
 from django.db.models.base import Model
 from django.forms.utils import ErrorList
 from .models import (Field_of_Study, University, Subjects, Exam_Subjects, 
-                     Alternative_Exam_Subjects, Attribiutes, Characteristics)
+                     Alternative_Exam_Subjects, Attributes, Characteristics)
 
 from django.core.exceptions import ValidationError
 
 
 class AddUniversityForm(forms.ModelForm):
-    TYPES = (
-        ('Uniwersytet','Uniwersytet'),
-        ('Akademia Wychowania Fizycznego','Akademia Wychowania Fizycznego'),
-        ('Uczelnia Ekonomiczna','Uczelnia Ekonomiczna'),
-        ('Uczelnia Pedagogiczna','Uczelnia Pedagogiczna'),
-        ('Uczelnia Przyrodniczo-Rolnicza','Uczelnia Przyrodniczo-Rolnicza'),
-        ('Uczelnia Techniczna','Uczelnia Techniczna')
-    )
-    name = forms.CharField(max_length=200,required=True)
-    city = forms.CharField(max_length=50,required=True)
-    type = forms.ChoiceField(choices=TYPES,required=True)
-    rank_in_type = forms.IntegerField(required=True)
-    rank_overall = forms.IntegerField(required=True)
-    link_to_site = forms.CharField(max_length=255,required=True)
-
     class Meta:
         model = University
         fields = ('name','city','type','rank_in_type','rank_overall','link_to_site')
@@ -48,3 +33,34 @@ class AddFieldForm(forms.ModelForm):
         
     def __init__(self, *args, **kwargs):
         super(AddFieldForm, self).__init__(*args, **kwargs)
+
+class ExamSubjectForm(forms.ModelForm):
+    class Meta:
+        model = Exam_Subjects
+        fields = ['field_of_study','subject']
+
+class AlternativeExamSubjectForm(forms.ModelForm):
+    subjects = forms.ModelMultipleChoiceField(
+        queryset=Subjects.objects.all().order_by('-subject'),
+        widget=forms.CheckboxSelectMultiple,
+    )
+    class Meta:
+        model = Alternative_Exam_Subjects
+        fields = ['main_subject', 'subject']
+
+class CharacteristicsForm(forms.ModelForm):
+    attributes = forms.ModelChoiceField(
+        queryset=Attributes.objects.all().order_by('attribute'),
+        )
+
+    fit = forms.FloatField(
+        widget=forms.NumberInput(attrs={'type': 'range', 'step': '0.2', 'min': '0.0', 'max': '1.0'}),)
+    class Meta:
+        model = Characteristics
+        fields = ['field_of_study','attribute', 'fit']
+
+    def clean_fit(self):
+        fit = self.cleaned_data.get('fit')
+        if fit is not None and (fit < 0.0 or fit > 1.0):
+            raise forms.ValidationError("Fit value must be between 0.0 and 1.0.")
+        return fit

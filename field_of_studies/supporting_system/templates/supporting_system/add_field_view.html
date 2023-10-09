@@ -25,6 +25,10 @@
         <div class="col">{{ form.language }}</div>
     </div>
     <div class="form-row">
+        <div class="col"><label>Rodzaj studiów</label></div>
+        <div class="col">{{ form.study_mode }}</div>
+    </div>
+    <div class="form-row">
         <div class="col"><label>Uczelnia</label></div>
         <div class="col">{{ form.university }}</div>
     </div>
@@ -37,7 +41,9 @@
         <div class="col">{{ form.description }}</div>
     </div>
     <div class="btn-group-justified">
-        <button type="submit" class="btn btn-primary" name="another">Zapisz i dodaj kolejny</button>
+        <button type="submit" class="btn btn-primary" name="another">Dodaj kolejny</button>
+        <button type="submit" class="btn btn-primary" name="subject">Dodaj wymagane przedmioty</button>
+        <button type="submit" class="btn btn-primary" name="characteristics">Dodaj cechy kierunku</button>
         <button type="submit" class="btn btn-success" name="save">Zapisz i wróć</button>
     </div>
 </form>

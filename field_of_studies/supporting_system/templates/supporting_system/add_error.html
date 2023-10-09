@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load tags %}
+{% block content %}
+<div class="jumbotron">
+    <h2 class="display-4">BŁĄD</h2>
+    <p class="lead">Przy dodawaniu atrybutu wystąpił błąd</p>
+    <hr class="my-4">
+</div>
+<div class="container">
+    {% for attr in obj %}
+    <div class="row">  
+        <div class="col">
+            {{ attr.value }}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

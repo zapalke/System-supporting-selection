@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (Field_of_Study, University, Subjects, Exam_Subjects, Alternative_Exam_Subjects,
-                    Attribiutes, Characteristics)
+                    Attributes, Characteristics)
 
 
 class Field_of_StudyAdmin(admin.ModelAdmin):
@@ -18,8 +18,8 @@ class Exam_SubjectsAdmin(admin.ModelAdmin):
 class Alternative_Exam_SubjectsAdmin(admin.ModelAdmin):
     list_display = [column.name for column in Alternative_Exam_Subjects._meta.fields]
 
-class AttribiutesAdmin(admin.ModelAdmin):
-    list_display = [column.name for column in Attribiutes._meta.fields]
+class AttributesAdmin(admin.ModelAdmin):
+    list_display = [column.name for column in Attributes._meta.fields]
 
 class CharacteristicsAdmin(admin.ModelAdmin):
     list_display = [column.name for column in Characteristics._meta.fields]
@@ -30,5 +30,5 @@ admin.site.register(University,UniversityAdmin)
 admin.site.register(Subjects,SubjectsAdmin)
 admin.site.register(Exam_Subjects,Exam_SubjectsAdmin)
 admin.site.register(Alternative_Exam_Subjects,Alternative_Exam_SubjectsAdmin)
-admin.site.register(Attribiutes,AttribiutesAdmin)
+admin.site.register(Attributes,AttributesAdmin)
 admin.site.register(Characteristics, CharacteristicsAdmin)

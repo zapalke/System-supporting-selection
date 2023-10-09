@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load tags %}
+{% block content %}
+
+<div class="jumbotron">
+    <h2 class="display-4">Dodaj przedmioty do kierunku.</h2>
+    <p class="lead">Dodaj przedmiot wymagany do kierunku {{ form.field_of_study.value|return_field_of_study }}</p>
+    <hr class="my-4">
+</div>
+
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-group">
+        <div class="col">
+           <label for="{{ form.subject.id_for_label }}">Subjects:</label> 
+        </div>
+        <div class="col">
+            {{ form.subject }}
+        </div>
+    </div>
+    <br>
+    <hr class="my-4">
+    <br>
+    <div class="btn-group-justified">
+        <button type="submit" class="btn btn-primary" name="another">Dodaj kolejny</button>
+        <button type="submit" class="btn btn-secondary" name="alternative">Dodaj alternatywne przedmioty</button>
+        <button type="submit" class="btn btn-warning" name="characteristics">Dodaj cechę</button>
+        <button type="submit" class="btn btn-info" name="field">Dodaj nowy kierunek</button>
+        <button type="submit" class="btn btn-success" name="save">Zapisz i wróć</button>
+    </div>
+</form>
+{% endblock %}

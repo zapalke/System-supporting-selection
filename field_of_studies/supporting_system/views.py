@@ -1,12 +1,13 @@
+from typing import Any
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic import (ListView, TemplateView, FormView)
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
-from .forms import AddUniversityForm, AddFieldForm
+from .forms import AddUniversityForm, AddFieldForm, ExamSubjectForm, AlternativeExamSubjectForm, CharacteristicsForm
 from .models import (Field_of_Study, University, Subjects,Exam_Subjects, 
-                     Alternative_Exam_Subjects, Attribiutes, Characteristics)
+                     Alternative_Exam_Subjects, Attributes, Characteristics)
 
 
 class MainPageView(TemplateView):
@@ -34,7 +35,7 @@ class AddUniversityView(LoginRequiredMixin,FormView):
                 'obj':University.objects.get(name=name),
                 'new_obj': uni_data
             }
-            return render(request,'supporting_system/add_university_error.html',context)
+            return render(request,'supporting_system/add_error.html',context)
         
         else:
             University.objects.create(**uni_data)
@@ -45,10 +46,8 @@ class AddUniversityView(LoginRequiredMixin,FormView):
                 return HttpResponseRedirect(reverse('ListUniversityView'))
 
 class AddFieldView(LoginRequiredMixin, FormView):
-    def get(self, request):
-        form_class = AddFieldForm
-        context = {'form':form_class}
-        return render(request, 'supporting_system/add_field_view.html',context)
+    template_name = 'supporting_system/add_field_view.html'
+    form_class = AddFieldForm
     
     def post(self, request, *args, **kwargs):
         name = request.POST['name']
@@ -61,20 +60,161 @@ class AddFieldView(LoginRequiredMixin, FormView):
 
         field_data = {
                     'name':name, 'degree':degree, 'study_mode':study_mode,'language':language,
-                    'university':University.objects.get(name=university), 'link_to_site':link_to_site,
+                    'university':University.objects.get(id=university), 'link_to_site':link_to_site,
                     'description':description
                 }
         try:
             existing_field = Field_of_Study.objects.get(
                 name=name, degree=degree, study_mode=study_mode,
-                language=language, university=University.objects.get(name=university)
+                language=language, university=university
                 )
             context = {'obj':existing_field, 'new_obj':field_data}
-            return render(request,'supporting_system/add_field_error.html',context)
+            return render(request,'supporting_system/add_error.html',context)
         except Field_of_Study.DoesNotExist:
-            Field_of_Study.objects.create(**field_data)
+            obj = Field_of_Study.objects.create(**field_data)
 
             if 'another' in request.POST:
                 return HttpResponseRedirect(reverse('AddFieldView'))
+            elif 'subject' in request.POST:
+                return HttpResponseRedirect(reverse('AddSubjectsToFieldView',kwargs={'field_of_study_id':obj.id}))
+            elif 'characteristics' in request.POST:
+                return HttpResponseRedirect(reverse('AddCharacteristicsView',kwargs={'field_of_study_id':obj.id}))
             else:
-                return HttpResponseRedirect(reverse('ListFieldView'))            
+                return HttpResponseRedirect(reverse('ListFieldView')) 
+
+class AddSubjectsToFieldView(LoginRequiredMixin, FormView):
+    template_name = 'supporting_system/add_subject_view.html'
+    form_class = ExamSubjectForm
+    
+    def get_initial(self):
+        initial = super().get_initial()
+
+        field_of_study_id = self.kwargs.get('field_of_study_id')
+        if field_of_study_id:
+            try:
+                field_of_study = Field_of_Study.objects.get(id=field_of_study_id)
+                initial['field_of_study'] = field_of_study
+            except Field_of_Study.DoesNotExist:
+                pass  
+
+        return initial
+    
+    def post(self, request, *args, **kwargs):
+        field_of_study = Field_of_Study.objects.get(id=self.kwargs.get('field_of_study_id'))
+        subject = Subjects.objects.get(id=request.POST['subject'])
+
+        if subject != '0Nieznany Przedmiot':
+            field_data = {
+                        'field_of_study':field_of_study, 'subject':subject
+                    }
+            try:
+                existing_field = Exam_Subjects.objects.get(
+                    field_of_study=field_of_study, subject=subject
+                    )
+                context = {'obj':existing_field, 'new_obj':field_data}
+                return render(request,'supporting_system/add_error.html',context)
+            except Exam_Subjects.DoesNotExist:
+                obj = Exam_Subjects.objects.create(**field_data)
+
+        if 'another' in request.POST:
+            return HttpResponseRedirect(reverse('AddSubjectsToFieldView', kwargs={'field_of_study_id':field_of_study.id}))
+        elif 'alternative' in request.POST:
+            return HttpResponseRedirect(reverse('AddAlternativeSubjectsToFieldView', kwargs={'main_subject_id':obj.id}))
+        elif 'field' in request.POST:
+            return HttpResponseRedirect(reverse('AddFieldView'))
+        elif 'characteristics' in request.POST:
+            return HttpResponseRedirect(reverse('AddCharacteristicsView',kwargs={'field_of_study_id':field_of_study.id}))
+        else:
+            return HttpResponseRedirect(reverse('ListFieldView'))  
+
+class AddAlternativeSubjectsToFieldView(LoginRequiredMixin, FormView):
+    template_name = 'supporting_system/add_alternative_subject_view.html'
+    form_class = AlternativeExamSubjectForm
+    
+    def get_initial(self):
+        initial = super().get_initial()
+
+        field_fo_study_id = self.kwargs.get('field_of_study_id')
+        if field_fo_study_id:
+            try:
+                field_fo_study = Field_of_Study.objects.get(id=field_fo_study_id)
+                initial['field_fo_study'] = field_fo_study
+            except Field_of_Study.DoesNotExist:
+                initial['field_fo_study'] = 0 
+
+        return initial
+    
+    def post(self, request, *args, **kwargs):
+        main_subject = Exam_Subjects.objects.get(id=self.kwargs.get('main_subject_id'))
+
+
+        for subject in request.POST['subjects']:
+            subject = Subjects.objects.get(id=subject)
+            if subject != '0Nieznany Przedmiot':
+                field_data = {
+                        'main_subject':main_subject, 'subject':subject
+                        }
+                try:
+                    existing_field = Alternative_Exam_Subjects.objects.get(
+                        main_subject=main_subject, subject=subject
+                        )
+                    context = {'obj':existing_field, 'new_obj':field_data}
+                    return render(request,'supporting_system/add_error.html',context)
+                except Alternative_Exam_Subjects.DoesNotExist:
+                    Alternative_Exam_Subjects.objects.create(**field_data)
+
+            if 'another' in request.POST:
+                return HttpResponseRedirect(reverse('AddAlternativeSubjectsToFieldView', kwargs={'main_subject_id':main_subject.id}))
+            elif 'main' in request.POST:
+                return HttpResponseRedirect(reverse('AddSubjectsToFieldView',kwargs={'field_of_study_id':main_subject.field_of_study.id}))
+            elif 'field' in request.POST:
+                return HttpResponseRedirect(reverse('AddFieldView'))
+            elif 'characteristics' in request.POST:
+                return HttpResponseRedirect(reverse('AddCharacteristicsView',kwargs={'field_of_study_id':main_subject.field_of_study.id}))
+            else:
+                return HttpResponseRedirect(reverse('ListFieldView'))    
+
+class AddCharacteristicsView(FormView):
+    template_name = 'supporting_system/add_characteristics_view.html'
+    form_class = CharacteristicsForm
+
+    def get_initial(self):
+        initial = super().get_initial()
+
+        field_of_study_id = self.kwargs.get('field_of_study_id')
+        if field_of_study_id:
+            try:
+                field_of_study = Field_of_Study.objects.get(id=field_of_study_id)
+                initial['field_of_study'] = field_of_study
+            except Field_of_Study.DoesNotExist:
+                pass  
+
+        return initial
+
+    def post(self, request, *args, **kwargs):
+        field_of_study = Field_of_Study.objects.get(id=self.kwargs.get('field_of_study_id'))
+
+        attribute = Attributes.objects.get(id=request.POST['attributes'])
+        fit = request.POST['fit']
+        if attribute != '0Nieznana cecha':
+            field_data = {
+                        'field_of_study':field_of_study, 'attribute':attribute,
+                        'fit':fit
+                    }
+            try:
+                existing_field = Characteristics.objects.get(
+                    field_of_study=field_of_study, attribute=attribute,
+                )
+                context = {'obj':existing_field, 'new_obj':field_data}
+                return render(request,'supporting_system/add_error.html',context)
+            except Characteristics.DoesNotExist:
+                Characteristics.objects.create(**field_data)
+
+        if 'another' in request.POST:
+            return HttpResponseRedirect(reverse('AddCharacteristicsView',kwargs={'field_of_study_id':field_of_study.id}))
+        elif 'field' in request.POST:
+            return HttpResponseRedirect(reverse('AddFieldView'))
+        elif 'main' in request.POST:
+            return HttpResponseRedirect(reverse('AddSubjectsToFieldView',kwargs={'field_of_study_id':field_of_study.id}))
+        else:
+            return HttpResponseRedirect(reverse('ListFieldView'))      
