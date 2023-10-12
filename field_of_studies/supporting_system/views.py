@@ -103,7 +103,7 @@ class AddSubjectsToFieldView(LoginRequiredMixin, FormView):
         field_of_study = Field_of_Study.objects.get(id=self.kwargs.get('field_of_study_id'))
         subject = Subjects.objects.get(id=request.POST['subject'])
 
-        if subject != '0Nieznany Przedmiot':
+        if subject.subject != '0Nieznany Przedmiot':
             field_data = {
                         'field_of_study':field_of_study, 'subject':subject
                     }
@@ -134,23 +134,23 @@ class AddAlternativeSubjectsToFieldView(LoginRequiredMixin, FormView):
     def get_initial(self):
         initial = super().get_initial()
 
-        field_fo_study_id = self.kwargs.get('field_of_study_id')
-        if field_fo_study_id:
+        main_subject_id = self.kwargs.get('main_subject_id')
+        if main_subject_id:
             try:
-                field_fo_study = Field_of_Study.objects.get(id=field_fo_study_id)
-                initial['field_fo_study'] = field_fo_study
-            except Field_of_Study.DoesNotExist:
-                initial['field_fo_study'] = 0 
+                main_subject = Exam_Subjects.objects.get(id=main_subject_id)
+                initial['main_subject'] = main_subject
+            except Exam_Subjects.DoesNotExist:
+                initial['main_subject'] = 0 
 
         return initial
     
     def post(self, request, *args, **kwargs):
         main_subject = Exam_Subjects.objects.get(id=self.kwargs.get('main_subject_id'))
 
-
-        for subject in request.POST['subjects']:
-            subject = Subjects.objects.get(id=subject)
-            if subject != '0Nieznany Przedmiot':
+        print(request.POST.getlist('subjects'))
+        for single_subject in request.POST.getlist('subjects'):
+            subject = Subjects.objects.get(id=single_subject)
+            if subject.subject != '0Nieznany Przedmiot':
                 field_data = {
                         'main_subject':main_subject, 'subject':subject
                         }
@@ -163,16 +163,16 @@ class AddAlternativeSubjectsToFieldView(LoginRequiredMixin, FormView):
                 except Alternative_Exam_Subjects.DoesNotExist:
                     Alternative_Exam_Subjects.objects.create(**field_data)
 
-            if 'another' in request.POST:
-                return HttpResponseRedirect(reverse('AddAlternativeSubjectsToFieldView', kwargs={'main_subject_id':main_subject.id}))
-            elif 'main' in request.POST:
-                return HttpResponseRedirect(reverse('AddSubjectsToFieldView',kwargs={'field_of_study_id':main_subject.field_of_study.id}))
-            elif 'field' in request.POST:
-                return HttpResponseRedirect(reverse('AddFieldView'))
-            elif 'characteristics' in request.POST:
-                return HttpResponseRedirect(reverse('AddCharacteristicsView',kwargs={'field_of_study_id':main_subject.field_of_study.id}))
-            else:
-                return HttpResponseRedirect(reverse('ListFieldView'))    
+        if 'another' in request.POST:
+            return HttpResponseRedirect(reverse('AddAlternativeSubjectsToFieldView', kwargs={'main_subject_id':main_subject.id}))
+        elif 'main' in request.POST:
+            return HttpResponseRedirect(reverse('AddSubjectsToFieldView',kwargs={'field_of_study_id':main_subject.field_of_study.id}))
+        elif 'field' in request.POST:
+            return HttpResponseRedirect(reverse('AddFieldView'))
+        elif 'characteristics' in request.POST:
+            return HttpResponseRedirect(reverse('AddCharacteristicsView',kwargs={'field_of_study_id':main_subject.field_of_study.id}))
+        else:
+            return HttpResponseRedirect(reverse('ListFieldView'))    
 
 class AddCharacteristicsView(FormView):
     template_name = 'supporting_system/add_characteristics_view.html'
@@ -196,7 +196,7 @@ class AddCharacteristicsView(FormView):
 
         attribute = Attributes.objects.get(id=request.POST['attributes'])
         fit = request.POST['fit']
-        if attribute != '0Nieznana cecha':
+        if attribute.attribute != '0Nieznana cecha':
             field_data = {
                         'field_of_study':field_of_study, 'attribute':attribute,
                         'fit':fit
@@ -217,4 +217,6 @@ class AddCharacteristicsView(FormView):
         elif 'main' in request.POST:
             return HttpResponseRedirect(reverse('AddSubjectsToFieldView',kwargs={'field_of_study_id':field_of_study.id}))
         else:
-            return HttpResponseRedirect(reverse('ListFieldView'))      
+            return HttpResponseRedirect(reverse('ListFieldView'))  
+
+    

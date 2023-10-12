@@ -8,6 +8,27 @@
     <hr class="my-4">
 </div>
 
+<div class="container">
+    
+    <span class="border">
+        <h4>Przedmioty przypiasne do tego kierunku:</h4>
+        {%for subject in form.field_of_study.value|return_subjects_with_alternatives_of_given_field %}
+            <li>{{ subject }}</li>
+        {% endfor %}
+    </span>
+
+</div>
+
+<div class="container">
+
+    <span class="border">
+        <h4>Cechy przypiasne do tego kierunku:</h4>
+        {%for attribute in form.field_of_study.value|return_characteristics_of_given_field %}
+            <li>{{ attribute }}</li>
+        {%  endfor %}
+    </span>
+
+</div>
 
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}

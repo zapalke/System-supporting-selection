@@ -11,7 +11,7 @@ def return_field_of_study(id):
 @register.filter(name='return_subject_of_given_field')
 def return_subject_of_given_field(id):
     obj = Exam_Subjects.objects.get(id=id)
-    return f'{obj.subject} dla przedmiotu {obj.field_of_study.name} ({obj.field_of_study.university.name})'
+    return f'{obj.subject} dla kierunku {obj.field_of_study.name} ({obj.field_of_study.university.name})'
 
 @register.filter(name='return_characteristics_of_given_field')
 def return_characteristics_of_given_field(id):
