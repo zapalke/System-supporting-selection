@@ -64,3 +64,36 @@ class CharacteristicsForm(forms.ModelForm):
         if fit is not None and (fit < 0.0 or fit > 1.0):
             raise forms.ValidationError("Fit value must be between 0.0 and 1.0.")
         return fit
+    
+class FieldFilterForm(forms.Form):
+    degree = forms.ChoiceField(
+        choices=Field_of_Study.DEGREES,
+        widget=forms.CheckboxSelectMultiple,
+        label='Stopień')
+    
+    study_mode = forms.ChoiceField(
+        choices=Field_of_Study.STUDY_MODE,
+        widget=forms.CheckboxSelectMultiple,
+        label='Rodzaj')
+
+    queryset=Field_of_Study.objects.only('language').distinct().order_by('language').values_list('language',flat=True)
+    language = forms.ChoiceField(
+        choices=[(x,x) for x in queryset],
+        widget=forms.CheckboxSelectMultiple,
+        label='Język')
+    
+    university = forms.ModelChoiceField(
+        queryset=University.objects.all().order_by('name'),
+        widget=forms.CheckboxSelectMultiple,
+        label='Uczelnia')
+    
+    queryset=University.objects.only('city').distinct().order_by('city').values_list('city',flat=True)
+    city = forms.ChoiceField(
+        choices=[(x,x) for x in queryset],
+        widget=forms.CheckboxSelectMultiple,
+        label='Miasto')
+    
+    subjects = forms.ModelChoiceField(
+        queryset=Subjects.objects.all().order_by('subject').exclude(subject='0Nieznany Przedmiot'),
+        widget=forms.CheckboxSelectMultiple,
+        label='Przedmioty zdawane na maturze')

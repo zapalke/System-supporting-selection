@@ -5,7 +5,8 @@ from django.views.generic import (ListView, TemplateView, FormView)
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
-from .forms import AddUniversityForm, AddFieldForm, ExamSubjectForm, AlternativeExamSubjectForm, CharacteristicsForm
+from .forms import (AddUniversityForm, AddFieldForm, ExamSubjectForm, FieldFilterForm,
+                    AlternativeExamSubjectForm, CharacteristicsForm)
 from .models import (Field_of_Study, University, Subjects,Exam_Subjects, 
                      Alternative_Exam_Subjects, Attributes, Characteristics)
 
@@ -219,4 +220,15 @@ class AddCharacteristicsView(FormView):
         else:
             return HttpResponseRedirect(reverse('ListFieldView'))  
 
+class FieldListView(ListView):
+    model = Field_of_Study
+    context_object_name = 'fields'
+    template_name = 'supporting_system/fields_list_view.html'
+    paginate_by = 15   
     
+def FieldView(request):
+    context = {
+        'form':FieldFilterForm(),
+        'fields':Field_of_Study.objects.all().order_by('name')
+    }
+    return render(request, 'supporting_system/fields_list_view.html', context)

@@ -30,8 +30,30 @@ def return_subject_with_alternatives_of_given_field(id):
             alternative_obj = Alternative_Exam_Subjects.objects.filter(main_subject=attribiute.id).all().order_by('subject__subject')
             temp_string = f'{attribiute.subject.subject}'
             for alternative_subject in alternative_obj:
-                temp_string += f' - {alternative_subject.subject.subject}'
+                temp_string += f' lub {alternative_subject.subject.subject}'
             to_display.append(temp_string)
         except Alternative_Exam_Subjects.DoesNotExist:
             to_display.append(attribiute.subject.subject)
+    if to_display == []:
+        to_display = None
     return to_display
+
+@register.filter(name='return_city_of_given_field')
+def return_city_of_given_field(id):
+    queryset = Field_of_Study.objects.get(id=id)
+    return  queryset.university.city
+
+@register.filter(name='return_type_of_given_uni')
+def return_type_of_given_uni(id):
+    queryset = Field_of_Study.objects.get(id=id)
+    return  queryset.university.type
+
+@register.filter(name='return_ranking_overall_of_given_uni')
+def return_subject_with_alternatives_of_given_field(id):
+    queryset = Field_of_Study.objects.get(id=id)
+    return  queryset.university.rank_overall
+
+@register.filter(name='return_ranking_in_type_of_given_uni')
+def return_ranking_in_type_of_given_uni(id):
+    queryset = Field_of_Study.objects.get(id=id)
+    return  queryset.university.rank_in_type
