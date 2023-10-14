@@ -2,13 +2,14 @@ from typing import Any
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic import (ListView, TemplateView, FormView)
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
 from .forms import (AddUniversityForm, AddFieldForm, ExamSubjectForm, FieldFilterForm,
                     AlternativeExamSubjectForm, CharacteristicsForm)
 from .models import (Field_of_Study, University, Subjects,Exam_Subjects, 
                      Alternative_Exam_Subjects, Attributes, Characteristics)
+from collections import defaultdict
 
 
 class MainPageView(TemplateView):
@@ -81,7 +82,7 @@ class AddFieldView(LoginRequiredMixin, FormView):
             elif 'characteristics' in request.POST:
                 return HttpResponseRedirect(reverse('AddCharacteristicsView',kwargs={'field_of_study_id':obj.id}))
             else:
-                return HttpResponseRedirect(reverse('ListFieldView')) 
+                return HttpResponseRedirect(reverse('FieldListView')) 
 
 class AddSubjectsToFieldView(LoginRequiredMixin, FormView):
     template_name = 'supporting_system/add_subject_view.html'
@@ -126,7 +127,7 @@ class AddSubjectsToFieldView(LoginRequiredMixin, FormView):
         elif 'characteristics' in request.POST:
             return HttpResponseRedirect(reverse('AddCharacteristicsView',kwargs={'field_of_study_id':field_of_study.id}))
         else:
-            return HttpResponseRedirect(reverse('ListFieldView'))  
+            return HttpResponseRedirect(reverse('FieldListView'))  
 
 class AddAlternativeSubjectsToFieldView(LoginRequiredMixin, FormView):
     template_name = 'supporting_system/add_alternative_subject_view.html'
@@ -173,7 +174,7 @@ class AddAlternativeSubjectsToFieldView(LoginRequiredMixin, FormView):
         elif 'characteristics' in request.POST:
             return HttpResponseRedirect(reverse('AddCharacteristicsView',kwargs={'field_of_study_id':main_subject.field_of_study.id}))
         else:
-            return HttpResponseRedirect(reverse('ListFieldView'))    
+            return HttpResponseRedirect(reverse('FieldListView'))    
 
 class AddCharacteristicsView(FormView):
     template_name = 'supporting_system/add_characteristics_view.html'
@@ -218,17 +219,159 @@ class AddCharacteristicsView(FormView):
         elif 'main' in request.POST:
             return HttpResponseRedirect(reverse('AddSubjectsToFieldView',kwargs={'field_of_study_id':field_of_study.id}))
         else:
-            return HttpResponseRedirect(reverse('ListFieldView'))  
+            return HttpResponseRedirect(reverse('FieldListView'))  
 
-class FieldListView(ListView):
-    model = Field_of_Study
-    context_object_name = 'fields'
-    template_name = 'supporting_system/fields_list_view.html'
-    paginate_by = 15   
-    
+def filter_by_subjects(queryset, subjects):
+    allowed_id = []
+    for field in queryset:
+        exam_subjects_for_field = Exam_Subjects.objects.filter(field_of_study=field.id).all()
+        exam_subjects_for_field_checklist = []
+        for sub in exam_subjects_for_field:
+            if str(sub.subject.id) in subjects:
+                exam_subjects_for_field_checklist.append(1)
+            else:
+                alternative_exam_subjects_for_field = Alternative_Exam_Subjects.objects.filter(main_subject=sub.id).all()
+                for alternative_subject in alternative_exam_subjects_for_field:
+                    if str(alternative_subject.subject.id) in subjects:
+                        exam_subjects_for_field_checklist.append(1)
+                        break
+        if len(exam_subjects_for_field_checklist) == exam_subjects_for_field.count():
+            allowed_id.append(field.id)
+    return allowed_id
+                
+                
+
 def FieldView(request):
+    queryset = Field_of_Study.objects.all().order_by('name')
+    if 'clear' in request.GET:
+        return HttpResponseRedirect(reverse('FieldListView'))  
+    else:
+        degree = request.GET.getlist('degree')
+        if degree != []:
+            to_filter = []
+            if 'I Stopień' in degree:
+                to_filter.append('Licencjat')
+                to_filter.append('Inżynier')
+                to_filter.append('Jednolite')
+            if 'II Stopień' in degree:
+                to_filter.append('Magister')
+            queryset = queryset.filter(degree__in=to_filter)
+        university = request.GET.getlist('university')
+        if university != []:
+            queryset = queryset.filter(university__in=university)
+        language = request.GET.getlist('language')
+        if language != []:
+            queryset = queryset.filter(language__in=language)
+        city = request.GET.getlist('city')
+        if city != []:
+            queryset = queryset.filter(university__city__in=city)
+        study_mode = request.GET.getlist('study_mode')
+        if study_mode != []:
+            if len(study_mode) == 2:
+                study_mode.append('Stacjonarne i niestacjonarne')
+            queryset = queryset.filter(study_mode__in=study_mode)
+        subjects = request.GET.getlist('subjects')
+        if subjects != []:
+            allowed_fields = filter_by_subjects(queryset,subjects)
+            queryset = queryset.filter(id__in=allowed_fields)
+    
+    paginator = Paginator(queryset, 15)
+    page = request.GET.get('page')
+    try:
+        response = paginator.page(page)
+    except PageNotAnInteger:
+        response = paginator.page(1)
+    except EmptyPage:
+        response = paginator.page(paginator.num_pages)
+
+    initials = {
+        'degree':degree,'university':university,'subjects':subjects,
+        'language':language, 'city':city, 'study_mode':study_mode
+        }
     context = {
-        'form':FieldFilterForm(),
-        'fields':Field_of_Study.objects.all().order_by('name')
+        'form':FieldFilterForm(initial=initials),
+        'fields':response,
+        'initials':initials
+        
     }
     return render(request, 'supporting_system/fields_list_view.html', context)
+
+def get_attributes_to_display(approved_attrs, excluded_attrs):
+    fields_with_approved_attrs = Characteristics.objects.filter(attribute__in=approved_attrs).values_list('id',flat=True)
+    prefered_attrs = list(Characteristics.objects.filter(field_of_study__in=fields_with_approved_attrs).exclude(attribute__in=excluded_attrs).exclude(attribute__in=approved_attrs).order_by('?').values_list('attribute__id',flat=True))
+    prefered_attrs = list(dict.fromkeys(prefered_attrs))
+    other_attrs = list(Characteristics.objects.exclude(attribute__in=prefered_attrs).exclude(attribute__in=approved_attrs).exclude(attribute__in=excluded_attrs).order_by('?').values_list('attribute__id',flat=True))
+    other_attrs = list(dict.fromkeys(other_attrs))
+    print(f'Found {len(prefered_attrs)} prefered attrs and {len(other_attrs)} other')
+    
+    attrs_to_display = []
+    proportion = 0.7
+    len_of_attrs = 10
+    added_other = 0
+    added_prefered = 0
+    for i in range(len_of_attrs):
+        if added_prefered < int(len_of_attrs*proportion):
+            if len(prefered_attrs) > 0:
+                attrs_to_display.append(prefered_attrs[0])
+                prefered_attrs.pop(0)
+                added_prefered += 1
+            elif len(other_attrs) > 0:
+                attrs_to_display.append(other_attrs[0])
+                other_attrs.pop(0)
+                added_other += 1
+
+        elif added_other < int(len_of_attrs*proportion):
+            if len(other_attrs) > 0:
+                attrs_to_display.append(other_attrs[0])
+                other_attrs.pop(0)
+                added_other += 1
+            elif len(prefered_attrs) > 0:
+                attrs_to_display.append(prefered_attrs[0])
+                prefered_attrs.pop(0)
+                added_prefered += 1
+    print(f'{attrs_to_display} will be displayed with {added_prefered} prefered attrs and {added_other} other attrs.')
+    return attrs_to_display
+
+def DiscoverView(request):
+    approved_attributes = request.GET.getlist('ap')
+    excluded_attributes = request.GET.getlist('dc')
+    if approved_attributes == [] and excluded_attributes == []:
+        print('Clearing data')
+        request.session['discover_try'] = 0
+        request.session['approved_attributes'] = []
+        request.session['excluded_attributes'] = []
+    else:
+        request.session['approved_attributes'].extend(approved_attributes)
+        excluded_attributes = [x for x in excluded_attributes if x not in approved_attributes]
+        request.session['excluded_attributes'].extend(excluded_attributes)
+        request.session['discover_try'] += 1
+        request.session.modified=True
+
+    attrs_to_display = get_attributes_to_display(request.session['approved_attributes'],request.session['excluded_attributes'])
+    if request.session['discover_try'] < 5 or len(attrs_to_display) == 0:
+        print(request.session['approved_attributes'], request.session['excluded_attributes'])
+        context = {
+            'attrs':Attributes.objects.filter(id__in=attrs_to_display).all()
+        }
+        return render(request, 'supporting_system/discover_view.html', context)
+    else:
+        return HttpResponseRedirect(reverse('DiscoverResultsView'))
+
+def DiscoverResultsView(request):
+    results_of_fields = defaultdict(float)
+    characteristics = Characteristics.objects.filter(attribute__in=request.session['approved_attributes']).all()
+    for char in characteristics:
+        results_of_fields[char.field_of_study.id] += char.fit
+
+    del request.session['discover_try']
+    del request.session['approved_attributes']
+    del request.session['excluded_attributes']
+    results_of_fields = dict(sorted(results_of_fields.items(), key=lambda x: x[1],reverse=True))
+    print(results_of_fields)
+    context = {
+            'results_top3':Field_of_Study.objects.filter(id__in=list(results_of_fields.keys())[:3]).all(),
+            'results_rest':Field_of_Study.objects.filter(id__in=list(results_of_fields.keys())[3:]).all()
+        }
+
+    return render(request, 'supporting_system/discover_results_view.html', context)
+

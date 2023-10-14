@@ -3,79 +3,8 @@
 {% block content %}
 
 <div class="jumbotron">
-    <h2 class="display-4">Przeglądarka kierunków studiów</h2>
+    <h2 class="display-4">Przeglądarka dostępnych uczelni</h2>
     <hr class="my-4">
-</div>
-<button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#filtersSection">Filtruj</button>
-    
-<div class="container mt-3 border border-secondary p-3 rounded bg-white collapse" id="filtersSection">
-    <h3>Przefiltruj kierunki</h3>
-    <form method="GET" action="{% url 'FieldListView' %}">
-        <div class="row gx-2 mb-3 center-block">
-            <div class="col">
-                <div class="container border border-1 rounded">
-                   <label for="{{ form.degree.id_for_label}}">{{ form.degree.label }}:</label> 
-                {{ form.degree }} 
-                </div>
-                
-            </div>
-            <div class="col">
-                <div class="container border border-1 rounded">
-                    <label for="{{ form.study_mode.id_for_label}}">{{ form.study_mode.label }}:</label>
-                    {{ form.study_mode }}
-                </div>
-                
-            </div>
-            <div class="col">
-                <div class="container border border-1 rounded">
-                   <label for="{{ form.language.id_for_label}}">{{ form.language.label }}:</label>
-                    {{ form.language }} 
-                </div>
-                
-            </div>
-        </div>
-        <div class="row border border-1 rounded">
-            <label for="{{ form.city.id_for_label}}">{{ form.city.label }}:</label>
-            <div class="col">
-                {% for city in form.city %}
-                    <div class="form-check">
-                        {{ city }}
-                        </label>
-                    </div>
-                    {% if forloop.counter|divisibleby:2 and not forloop.last %}</div><div class="col">{% endif %}
-                {% endfor %}
-            </div>
-        </div>
-        <br>
-        <div class="row border border-1 rounded">
-            <label for="{{ form.university.id_for_label}}">{{ form.university.label }}:</label>
-            <div class="col">
-                {% for uni in form.university %}
-                    <div class="form-check">
-                        {{ uni }}
-                        </label>
-                    </div>
-                    {% if forloop.counter|divisibleby:3 and not forloop.last %}</div><div class="col">{% endif %}
-                {% endfor %}
-            </div>
-        </div>
-        <br>
-        <div class="row border border-1 rounded">
-            <label for="{{ form.subjects.id_for_label}}">{{ form.subjects.label }}:</label>
-            <div class="col">
-                {% for subject in form.subjects %}
-                    <div class="form-check">
-                        {{ subject }}
-                        </label>
-                    </div>
-                    {% if forloop.counter|divisibleby:3 and not forloop.last %}</div><div class="col">{% endif %}
-                {% endfor %}
-            </div>
-        </div>
-        <br>
-        <button type="submit" class="btn btn-primary">Zastosuj</button>
-        <button type="submit" class="btn btn-danger" name="clear">Wyczyść</button>
-    </form>  
 </div>
 
 <div class="container mt-3 border border-secondary p-3 rounded">

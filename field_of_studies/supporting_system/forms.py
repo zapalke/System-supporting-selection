@@ -66,13 +66,14 @@ class CharacteristicsForm(forms.ModelForm):
         return fit
     
 class FieldFilterForm(forms.Form):
+    degree_choices = (('I Stopień','I Stopień'),('II Stopień','II Stopień'))
     degree = forms.ChoiceField(
-        choices=Field_of_Study.DEGREES,
+        choices=degree_choices,
         widget=forms.CheckboxSelectMultiple,
         label='Stopień')
     
     study_mode = forms.ChoiceField(
-        choices=Field_of_Study.STUDY_MODE,
+        choices=Field_of_Study.STUDY_MODE[:2],
         widget=forms.CheckboxSelectMultiple,
         label='Rodzaj')
 

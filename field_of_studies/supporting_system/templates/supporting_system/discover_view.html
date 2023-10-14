@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load tags %}
+{% block content %}
+
+<div class="jumbotron">
+    <h2 class="display-4">Odkryj kierunek studiów</h2>
+    <p class="lead">Wybierz które cechy pasują do ciebie a system zaproponuje które kierunki studiów najbardziej do ciebie pasują.</p>
+    <hr class="my-4">
+</div>
+
+<div class="container">
+    <form method="get">
+        {% for attribute in attrs %}
+        <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="{{ attribute.id }}" name="ap" value="{{ attribute.id }}">
+            <label class="form-check-label" for="{{ attribute.id }}">{{ attribute.attribute }}</label>
+            <input type="hidden" name="dc" value="{{ attribute.id }}">
+        </div>
+        {% endfor %}
+    
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
+    
+{% endblock %}

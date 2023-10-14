@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load tags %}
+{% block content %}
+
+<div class="jumbotron">
+    <h2 class="display-4">Odkryj kierunek studiów</h2>
+    <p class="lead">Poniżej znajdują się rezultaty przeprowadzonej przez system analizy. </p>
+    <hr class="my-4">
+</div>
+
+<div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
+    {% for field in results_top3 %}
+        <div class="feature col">
+          <div class="feature-icon bg-primary bg-gradient">
+            <svg class="bi" width="1em" height="1em"><use xlink:href="#collection"></use></svg>
+          </div>
+              <h2>{{field.name}}</h2>
+              <h3>{{field.univeristy.name}}</h3>
+              <div class="container border border-info border-1 rounded p-3">
+                <div class="row p-1">
+                    <div class="col-md-6 mb-3">
+                        <div class="border border-primary bg-white rounded p-2">
+                            <h5 class="mb-3">Informacje o kierunku:</h5>
+                            <div class="row">
+                                <div class="col-4">
+                                    <h6>Typ studiów:</h6>
+                                </div>
+                                <div class="col-5">
+                                    {{ field.study_mode }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-4">
+                                    <h6>Miasto studiowania:</h6>
+                                </div>
+                                <div class="col-4">
+                                    {{ field.id|return_city_of_given_field }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-4">
+                                    <h6>Ranking uczelni:</h6>
+                                </div>
+                                <div class="col-5">
+                                    <div class="mb-2">
+                                        Ogólnie: {{ field.id|return_ranking_overall_of_given_uni }}
+                                    </div>
+                                    <div>
+                                        W kategorii: {{ field.id|return_ranking_in_type_of_given_uni }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="border border-1 border-primary bg-white p-2 rounded">
+                            <h5>Przedmioty wymagane do rekrutacji:</h5>
+                            {% if field.id|return_subjects_with_alternatives_of_given_field == None %}
+                                {% if field.degree == 'Magister' %}
+                                    Do rekrutacji wymagana jest ocena z egzaminu dyplomowego.
+                                {% else %}
+                                    Do rekrutacji można się zgłosić z dowolnym przedmiotem.
+                                {% endif %}
+                            {% else %}
+                                <ul>
+                                    {% for subject in field.id|return_subjects_with_alternatives_of_given_field %}
+                                        <li>{{subject}} </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %} 
+                        </div>    
+                    </div>    
+                </div>
+                <p class='fw-light'>{{field.description}}</p>
+                <a href='{{field.link_to_site}}' class="icon-link">
+                    Przejdź do strony kierunku
+                    <svg class="bi" width="1em" height="1em"><use xlink:href="#chevron-right"></use></svg>
+                  </a>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+    
+{% endblock %}
