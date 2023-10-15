@@ -67,3 +67,11 @@ def return_current_filters(initials:dict):
             for val in values:
                 next_url += f'&{key}={val}'
     return  next_url
+
+@register.filter(name='check_if_discover_url')
+def check_if_discover_url(url):
+    print(url)
+    if 'Discover' in url:
+        return True
+    else:
+        return False

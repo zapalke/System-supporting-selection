@@ -14,36 +14,39 @@
 </head>
 
 <body>
-    <header class="p-3 bg-dark text-white">
-        <div class="container">
-          <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
-            <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">
-              <svg class="bi me-2" width="40" height="32" role="img" aria-label="Bootstrap"><use xlink:href="#bootstrap"></use></svg>
-            </a>
-    
-            <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-              <li><a href="{% url 'MainPageView' %}" class="nav-link px-2 {% if request.resolver_match.url_name == 'MainPageView' %}text-secondary{% else %}text-white{% endif %}">Strona główna</a></li>
-              <li><a href="{% url 'DiscoverView' %}" class="nav-link px-2 {% if request.resolver_match.url_name == 'DiscoverView' %}text-secondary{% else %}text-white{% endif %}">Odkryj swój kierunek</a></li>
-              <li><a href="{% url 'FieldListView' %}" class="nav-link px-2 {% if request.resolver_match.url_name == 'FieldListView' %}text-secondary{% else %}text-white{% endif %}">Lista kierunków</a></li>
-              <li><a href="{% url 'FieldListView' %}" class="nav-link px-2 {% if request.resolver_match.url_name == 'FieldListView' %}text-secondary{% else %}text-white{% endif %}">Lista uczelni</a></li>
-              <li><a href="{% url 'FieldListView' %}" class="nav-link px-2 {% if request.resolver_match.url_name == 'FieldListView' %}text-secondary{% else %}text-white{% endif %}">O stronie</a></li>
-          </ul>
-    
-            <div class="text-end">
-                {% if user.is_authenticated %}
-                    Hi {{ user.username }}!
-                    <button type="button" class="btn btn-outline-light me-2" onclick="document.location='{% url 'logout' %}';">Log Out</button>
-                {% else %}
-                    <button type="button" class="btn btn-outline-light me-2" onclick="document.location='{% url 'login' %}';">Login</button>
-                {% endif %}
-            </div>
+  <header class="p-3 bg-dark text-white">
+      <div class="container">
+        <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+          <a href="{% url 'MainPageView' %}" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">
+            <i class="fa-solid fa-s fa-lg fa-beat" style="color: #ffffff;"></i>  &nbsp; &nbsp;
+          </a>
+          
+          <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+            <li> <a href="{% url 'MainPageView' %}" class="nav-link px-2 {% if request.resolver_match.url_name == 'MainPageView' %}text-info{% else %}text-white{% endif %}"><i class="fa-solid fa-house fa-sm"></i> Strona główna</a></li>
+            <li> <a href="{% url 'DiscoverView' %}" class="nav-link px-2 {% if request.resolver_match.url_name == 'DiscoverView' %}text-info{% else %}text-white{% endif %}"><i class="fa-solid fa-magnifying-glass fa-sm"></i> Odkryj swój kierunek</a></li>
+            <li> <a href="{% url 'FieldListView' %}" class="nav-link px-2 {% if request.resolver_match.url_name == 'FieldListView' %}text-info{% else %}text-white{% endif %}"><i class="fa-solid fa-list fa-sm"></i> Lista kierunków</a></li>
+            <li> <a href="{% url 'FieldListView' %}" class="nav-link px-2 {% if request.resolver_match.url_name == 'FieldListView' %}text-info{% else %}text-white{% endif %}"><i class="fa-solid fa-building-columns fa-sm"></i> Lista uczelni</a></li>
+            <li> <a href="{% url 'FieldListView' %}" class="nav-link px-2 {% if request.resolver_match.url_name == 'FieldListView' %}text-info{% else %}text-white{% endif %}"><i class="fa-solid fa-address-card fa-sm"></i> O stronie</a></li>
+        </ul>
+  
+          <div class="text-end">
+              {% if user.is_authenticated %}
+                  Hi {{ user.username }}!
+                  <button type="button" class="btn btn-outline-light me-2" onclick="document.location='{% url 'logout' %}';">Log Out</button>
+              {% else %}
+                  <button type="button" class="btn btn-outline-light me-2" onclick="document.location='{% url 'login' %}';">Login</button>
+              {% endif %}
           </div>
         </div>
-      </header>
+      </div>
+    </header>
     <div class="container my-3 mx-auto p-1 bg-light">
         {% block content %}
         {% endblock %}
     </div>
-
+    <footer class="p-3 bg-dark text-white">
+      <div class="container">
+      </div>
+  </footer>
 </body>
 </html>
