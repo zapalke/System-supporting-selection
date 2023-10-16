@@ -1,4 +1,5 @@
 {% load static %}
+{% load tags %}
 
 
 <!DOCTYPE html>
@@ -23,7 +24,7 @@
           
           <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
             <li> <a href="{% url 'MainPageView' %}" class="nav-link px-2 {% if request.resolver_match.url_name == 'MainPageView' %}text-info{% else %}text-white{% endif %}"><i class="fa-solid fa-house fa-sm"></i> Strona główna</a></li>
-            <li> <a href="{% url 'DiscoverView' %}" class="nav-link px-2 {% if request.resolver_match.url_name == 'DiscoverView' %}text-info{% else %}text-white{% endif %}"><i class="fa-solid fa-magnifying-glass fa-sm"></i> Odkryj swój kierunek</a></li>
+            <li> <a href="{% url 'DiscoverView' %}" class="nav-link px-2 {% if request.resolver_match.url_name|check_if_discover_url %}text-info{% else %}text-white{% endif %}"><i class="fa-solid fa-magnifying-glass fa-sm"></i> Odkryj swój kierunek</a></li>
             <li> <a href="{% url 'FieldListView' %}" class="nav-link px-2 {% if request.resolver_match.url_name == 'FieldListView' %}text-info{% else %}text-white{% endif %}"><i class="fa-solid fa-list fa-sm"></i> Lista kierunków</a></li>
             <li> <a href="{% url 'FieldListView' %}" class="nav-link px-2 {% if request.resolver_match.url_name == 'FieldListView' %}text-info{% else %}text-white{% endif %}"><i class="fa-solid fa-building-columns fa-sm"></i> Lista uczelni</a></li>
             <li> <a href="{% url 'FieldListView' %}" class="nav-link px-2 {% if request.resolver_match.url_name == 'FieldListView' %}text-info{% else %}text-white{% endif %}"><i class="fa-solid fa-address-card fa-sm"></i> O stronie</a></li>

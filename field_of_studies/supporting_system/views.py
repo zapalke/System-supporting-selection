@@ -306,11 +306,10 @@ def DiscoverView_degree(request):
     else:
         degree = request.POST.get('degree')
         if degree == degrees[0]:
-            request.session['degree'] = ['Licencjat','Inżynier','Jednolite']
-            print(request.session['degree'])
+            request.session['filtered_fields'] = list(Field_of_Study.objects.filter(degree__in=['Licencjat','Inżynier','Jednolite']).values_list('id',flat=True))
             return HttpResponseRedirect(reverse('DiscoverView_subjects'))
         else:
-            request.session['degree'] = ['Magister']
+            request.session['filtered_fields'] = list(Field_of_Study.objects.filter(degree='Magister').values_list('id',flat=True))
             return HttpResponseRedirect(reverse('DiscoverView_main'))
         
     
@@ -322,10 +321,11 @@ def DiscoverView_subjects(request):
         return render(request, 'supporting_system/discover_subjects_view.html', context)
     else:
         if request.POST.getlist('subjects'):
-            fields_matching_subjects = filter_by_subjects(Field_of_Study.objects.filter(degree__in=request.session['degree']).all(),request.POST.getlist('subjects'))
+            fields_matching_subjects = filter_by_subjects(
+                Field_of_Study.objects.filter(id__in=request.session['filtered_fields']).all(),
+                request.POST.getlist('subjects')
+                )
             request.session['filtered_fields'] = fields_matching_subjects
-        else:
-            request.session['filtered_fields'] = list(Field_of_Study.objects.filter(degree__in=request.session['degree']).values_list('id',flat=True))
         return HttpResponseRedirect(reverse('DiscoverView_main'))
     
 def get_attributes_to_display(approved_attrs, excluded_attrs,filtered_fields):
@@ -337,7 +337,7 @@ def get_attributes_to_display(approved_attrs, excluded_attrs,filtered_fields):
     print(f'Found {len(prefered_attrs)} prefered attrs and {len(other_attrs)} other')
     
     attrs_to_display = []
-    proportion = 0.9
+    proportion = 0.8
     len_of_attrs = 10
     added_other = 0
     added_prefered = 0
@@ -383,11 +383,13 @@ def DiscoverView(request):
         request.session['approved_attributes'],request.session['excluded_attributes'], 
         request.session['filtered_fields']
         )
-    #if request.session['discover_try'] < 5 and len(attrs_to_display) != 0:
-    if len(attrs_to_display) != 0:
+    max_tries = 5
+    if request.session['discover_try'] < max_tries and len(attrs_to_display) != 0:
+    #if len(attrs_to_display) != 0:
         print(request.session['approved_attributes'], request.session['excluded_attributes'])
         context = {
-            'attrs':Attributes.objects.filter(id__in=attrs_to_display).all()
+            'attrs':Attributes.objects.filter(id__in=attrs_to_display).all(),
+            'progress': round(request.session['discover_try']/max_tries,2)*100
         }
         return render(request, 'supporting_system/discover_view.html', context)
     else:
@@ -409,24 +411,22 @@ def DiscoverResultsView(request):
 
     for key, value in results_of_fields.items():
         chars = list(Characteristics.objects.filter(field_of_study=key, attribute__id__in=shown_characteristics).values_list('fit',flat=True))
-        results_of_fields[key] = (value/sum(chars))*100
+        results_of_fields[key] = (value*100)/sum(chars)
         print(f'{key} - {results_of_fields[key]} ({len(chars)}/{Characteristics.objects.filter(field_of_study=key).values_list("fit",flat=True).count()}) - {Field_of_Study.objects.get(id=key)}')
 
     # del request.session['discover_try']
     # del request.session['approved_attributes']
     # del request.session['excluded_attributes']
     # del request.session['filtered_fields']
-    # del request.session['subjects']
-    # del request.session['degree']
 
     results_of_fields = dict(sorted(results_of_fields.items(), key=lambda x: x[1],reverse=True))
     results_top3 = []
     results_rest = []
     for key, value in results_of_fields.items():
         if len(results_top3) < 3:
-            results_top3.append([Field_of_Study.objects.get(id=key), round(value,2)])
-        elif value >= 1.0 and len(results_rest) < 10:
-            results_rest.append([Field_of_Study.objects.get(id=key), round(value,2)])
+            results_top3.append([Field_of_Study.objects.get(id=key), round(value,2), Characteristics.objects.filter(field_of_study=key, attribute__id__in=shown_characteristics).count(),Characteristics.objects.filter(field_of_study=key).count()])
+        elif value >= 25.0 and len(results_rest) < 10:
+            results_rest.append([Field_of_Study.objects.get(id=key), round(value,2), Characteristics.objects.filter(field_of_study=key, attribute__id__in=shown_characteristics).count(),Characteristics.objects.filter(field_of_study=key).count()])
         else:
             break
         

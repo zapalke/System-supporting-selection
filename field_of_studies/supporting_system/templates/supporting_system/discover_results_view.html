@@ -9,7 +9,7 @@
     <h3>Najbardziej dopasowane kierunki</h3>
 </div>
 <div class="row g-2 py-4 row-cols-3 row-cols-lg-1">
-    {% for field, result in results_top3 %}
+    {% for field, result,shown_chars,all_chars in results_top3 %}
     <div class="feature col">
         <div class="feature-icon bg-primary bg-gradient">
             <svg class="bi" width="1em" height="1em"><use xlink:href="#collection"></use></svg>
@@ -22,9 +22,11 @@
                 <h2>{{ field.name }}</h2>
                 <h4>{{ field.university }}</h4>
             </div>
-            <div class="col-4 align-self-lg-auto border border-3 border-success rounded bg-white d-flex align-items-center justify-content-center">
-                <h2 class="text-center">Dopasowanie: {{ result }}%</h2>
-            </div> 
+            <div class="col-4 align-self-lg-auto border border-3 border-success rounded bg-white" style="margin-top: 5px;">
+                <h4 class="text-center py-1 mb-0">Dopasowanie: {{ result }}%</h4>
+                <p class="text-center small py-1 mb-0">Wyliczone na podstawie {{shown_chars}} wyświetlonych cech z {{all_chars}} przypisanych do kierunku.</p>
+            </div>
+            
             <div class="col-1"></div>
         </div>
     </div>
@@ -91,18 +93,23 @@
 {% if results_rest %}
     <h3>Reszta dopasowanych kierunków</h3>
     <div class="container mt-3 border border-secondary p-3 rounded">
-        {% for field, result in results_rest %}
+        {% for field, result, shown_chars, all_chars in results_rest %}
             <div class="row jumbotron mb-3" data-bs-toggle="collapse" data-bs-target="#{{ field.id }}" aria-expanded="false">
                 <div class="col-sm">
-                    <h5 class="bold">{{result}}% - {{field.name}}</h5>
+                    <h5 class="bold">{{field.name}}</h5>
                 </div>
                 <div class="col-sm">
-                    <h5>{{field.university.name}}</h5>
+                    <h5 class="text-center">{{field.university.name}}</h5>
                 </div>
                 <div class="col-sm">
-                    <h5>
+                    <h5 class="text-center">
                     {{field.degree}}
                     </h5>
+                </div>
+                <div class="col-sm">
+                    <h6 class="text-center">
+                    {{result}}%- Cechy wyświetlone/wszystkie ({{shown_chars}}/{{all_chars}})
+                    </h6>
                 </div>
                 <div id="{{ field.id }}" class="collapse" data-parent="#container">
                     <div class="container border border-info border-1 rounded p-3">

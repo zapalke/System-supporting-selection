@@ -4,7 +4,13 @@
 
 <div class="jumbotron">
     <h2 class="display-4">Odkryj kierunek studiów</h2>
-    <p class="lead">Wybierz które cechy pasują do ciebie a system zaproponuje które kierunki studiów najbardziej do ciebie pasują.</p>
+    <p class="lead">System pomoże wybrać ci najbardziej dopasowany kierunek studiów. 
+        <ul>
+            <li class="lead">Najpierw zostaniesz poproszony o wybranie stopnia studiów.</li> 
+            <li class="lead">Potem w przypadku szukania studiów I stopnia będziesz mógł uzupełnić które przedmioty zdawałeś na maturze. </li>
+            <li class="lead">Finalnie zostanie ci kilkukrotnie wyświetlone 10 cech które możesz zaznaczyć jeżeli ci się podobają. Na ich podstawie otrzymasz kilka najbardziej dopasowanych kierunków studiów</li> 
+        </ul>
+    </p>
     <hr class="my-4">
 </div>
 
@@ -13,6 +19,7 @@
         {% csrf_token %}
         <div class="container mx-auto p-3 bg-white rounded border" style="max-width: 650px;">
             <h4 class="text-center pb-2">Wybierz pasujące do ciebie cechy.</h4>
+            <h5 class="text-center pb-2"> Postęp: {{progress}}%</h5>
             {% for attribute in attrs %}
               <div class="form-check d-flex align-items-center mb-3">
                   <input type="checkbox" class="form-check-input" id="{{ attribute.id }}" name="approved" value="{{ attribute.id }}">
