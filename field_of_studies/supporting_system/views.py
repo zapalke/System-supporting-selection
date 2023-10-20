@@ -5,7 +5,7 @@ from django.views.generic import (ListView, TemplateView, FormView)
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
-from .forms import (AddUniversityForm, AddFieldForm, ExamSubjectForm, FieldFilterForm,
+from .forms import ( AddFieldForm, ExamSubjectForm, FieldFilterForm,
                     AlternativeExamSubjectForm, CharacteristicsForm)
 from .models import (Field_of_Study, University, Subjects,Exam_Subjects, 
                      Alternative_Exam_Subjects, Attributes, Characteristics)
