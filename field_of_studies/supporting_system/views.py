@@ -13,44 +13,26 @@ from collections import defaultdict
 
 
 class MainPageView(TemplateView):
+    """Template View for main page which contains links for subpages
+    """
     template_name = 'supporting_system/main_page.html'
 
 class AboutView(TemplateView):
+    """Template view for About page which contains some information about the project
+    """
     template_name = 'supporting_system/about_view.html'
 
-class AddUniversityView(LoginRequiredMixin,FormView):
-    def get(self, request):
-        form_class = AddUniversityForm
-        context = {'form':form_class}
-        return render(request, 'supporting_system/add_university_view.html',context)
-    
-    def post(self, request, *args, **kwargs):
-        name = request.POST['name']
-        city = request.POST['city']
-        type = request.POST['type']
-        rank_overall = request.POST['rank_overall']
-        rank_in_type = request.POST['rank_in_type']
-        link_to_site = request.POST['link_to_site']
-        uni_data = {
-                    'name':name, 'city':city, 'type':type,'rank_overall':rank_overall,
-                    'rank_in_type':rank_in_type, 'link_to_site':link_to_site
-                }
-        if name in University.objects.values_list('name',flat=True):
-            context = {
-                'obj':University.objects.get(name=name),
-                'new_obj': uni_data
-            }
-            return render(request,'supporting_system/add_error.html',context)
-        
-        else:
-            University.objects.create(**uni_data)
-
-            if 'another' in request.POST:
-                return HttpResponseRedirect(reverse('AddUniversityView'))
-            else:
-                return HttpResponseRedirect(reverse('ListUniversityView'))
-
 class AddFieldView(LoginRequiredMixin, FormView):
+    """View that helps with adding new study fields to database.
+    The view is login protected so only logged in users can access it.
+    
+    Returns:
+        There are several pages where page can redirect, based on button clicked in template.
+        AddFieldView: Add another study field
+        AddSubjectsToFieldView: Add exam subjects requried to qualify for given field
+        AddCharacteristicsView: Add some attributes that describe given study field
+        FieldListView: Page that lists all study fields in database
+    """
     template_name = 'supporting_system/add_field_view.html'
     form_class = AddFieldForm
     
@@ -68,6 +50,9 @@ class AddFieldView(LoginRequiredMixin, FormView):
                     'university':University.objects.get(id=university), 'link_to_site':link_to_site,
                     'description':description
                 }
+        
+        # Exception that checks if given field already exists in database
+        # It field exists it displays error page
         try:
             existing_field = Field_of_Study.objects.get(
                 name=name, degree=degree, study_mode=study_mode,
@@ -75,6 +60,8 @@ class AddFieldView(LoginRequiredMixin, FormView):
                 )
             context = {'obj':existing_field, 'new_obj':field_data}
             return render(request,'supporting_system/add_error.html',context)
+        
+        # If not it creates new object
         except Field_of_Study.DoesNotExist:
             obj = Field_of_Study.objects.create(**field_data)
 
@@ -88,9 +75,21 @@ class AddFieldView(LoginRequiredMixin, FormView):
                 return HttpResponseRedirect(reverse('FieldListView')) 
 
 class AddSubjectsToFieldView(LoginRequiredMixin, FormView):
+    """View that helps with adding exam subjects required to qualify for given
+    study field. The view is login protected so only logged in users can access it.
+    
+    Returns:
+        There are several pages where page can redirect, based on button clicked in template.
+        AddFieldView: Add another study field
+        AddSubjectsToFieldView: Add exam subjects requried to qualify for given field
+        AddAlternativeSubjectsToFieldView: Add subjects that can be an alternative to the current one
+        AddCharacteristicsView: Add some attributes that describe given study field
+        FieldListView: Page that lists all study fields in database
+    """
     template_name = 'supporting_system/add_subject_view.html'
     form_class = ExamSubjectForm
     
+    # Function that finds in url to which study field you want to add subjects
     def get_initial(self):
         initial = super().get_initial()
 
@@ -108,6 +107,7 @@ class AddSubjectsToFieldView(LoginRequiredMixin, FormView):
         field_of_study = Field_of_Study.objects.get(id=self.kwargs.get('field_of_study_id'))
         subject = Subjects.objects.get(id=request.POST['subject'])
 
+        # "0Nieznany przedmiot" acts like a dummy subject to exit page without adding anything
         if subject.subject != '0Nieznany Przedmiot':
             field_data = {
                         'field_of_study':field_of_study, 'subject':subject
@@ -133,6 +133,19 @@ class AddSubjectsToFieldView(LoginRequiredMixin, FormView):
             return HttpResponseRedirect(reverse('FieldListView'))  
 
 class AddAlternativeSubjectsToFieldView(LoginRequiredMixin, FormView):
+    """View that helps with adding alternative exam subjects to given subject.
+    To qualify for some study field you sometimes can have for example Physics OR Computer Science, 
+    this view will add CS as an alternative to Physics. 
+    The view is login protected so only logged in users can access it.
+    
+    Returns:
+        There are several pages where page can redirect, based on button clicked in template.
+        AddFieldView: Add another study field
+        AddSubjectsToFieldView: Add exam subjects requried to qualify for given field
+        AddAlternativeSubjectsToFieldView: Add subjects that can be an alternative to the current one
+        AddCharacteristicsView: Add some attributes that describe given study field
+        FieldListView: Page that lists all study fields in database
+    """
     template_name = 'supporting_system/add_alternative_subject_view.html'
     form_class = AlternativeExamSubjectForm
     
@@ -180,9 +193,20 @@ class AddAlternativeSubjectsToFieldView(LoginRequiredMixin, FormView):
             return HttpResponseRedirect(reverse('FieldListView'))    
 
 class AddCharacteristicsView(FormView):
+    """View that helps with adding some attributes that describe given study field.
+    These attributes are later used in DSS. The view is login protected so only logged in users can access it.
+    
+    Returns:
+        There are several pages where page can redirect, based on button clicked in template.
+        AddFieldView: Add another study field
+        AddSubjectsToFieldView: Add exam subjects requried to qualify for given field
+        AddCharacteristicsView: Add some attributes that describe given study field
+        FieldListView: Page that lists all study fields in database
+    """
     template_name = 'supporting_system/add_characteristics_view.html'
     form_class = CharacteristicsForm
 
+    # Getting initial field of study to add attribute
     def get_initial(self):
         initial = super().get_initial()
 
@@ -201,6 +225,8 @@ class AddCharacteristicsView(FormView):
 
         attribute = Attributes.objects.get(id=request.POST['attributes'])
         fit = request.POST['fit']
+        
+        # "0Nieznana cecha" acts like dummy attribute to exit the form without adding anything
         if attribute.attribute != '0Nieznana cecha':
             field_data = {
                         'field_of_study':field_of_study, 'attribute':attribute,
@@ -225,6 +251,17 @@ class AddCharacteristicsView(FormView):
             return HttpResponseRedirect(reverse('FieldListView'))  
 
 def filter_by_subjects(queryset, subjects):
+    """Function that filters study field based on exam subjects. It checks if subjects requried to qualify
+    for a given field are in the list of passed subjects. If the so called main subject does not match anything
+    function checks if there are some alternatives.
+
+    Args:
+        queryset (queryset): Field_of_Study model queryset to be filtered
+        subjects (list): Subjects that user choosed 
+
+    Returns:
+        queryset: Filtered queryset
+    """
     allowed_id = []
     for field in queryset:
         exam_subjects_for_field = Exam_Subjects.objects.filter(field_of_study=field.id).all()
@@ -245,9 +282,17 @@ def filter_by_subjects(queryset, subjects):
                 
 
 def FieldView(request):
+    """View that lists all study fields. It also allows filtering the queryset by 
+    some attributes like degree, univeristy or exam subjects. Whole page is limited to display 15
+    elements
+    """
     queryset = Field_of_Study.objects.all().order_by('name')
+    
+    # Simple method to clear the filters
     if 'clear' in request.GET:
         return HttpResponseRedirect(reverse('FieldListView'))  
+    
+    # Checking and applying filters that are in the get request
     else:
         degree = request.GET.getlist('degree')
         if degree != []:
@@ -287,6 +332,7 @@ def FieldView(request):
     except EmptyPage:
         response = paginator.page(paginator.num_pages)
 
+    # Initial elements that were choosed in filters
     initials = {
         'degree':degree,'university':university,'subjects':subjects,
         'language':language, 'city':city, 'study_mode':study_mode
@@ -299,7 +345,17 @@ def FieldView(request):
     }
     return render(request, 'supporting_system/fields_list_view.html', context)
 
+# Decission Supporting System based on candiate best fit (percentage of characteristics that were choosen by the user) for given field 
+
 def DiscoverView_degree(request):
+    """First page of the DSS. It asks user to choose which level of study fields is he looking for.
+    This page uses django sessions to store information about the user
+
+    Returns:
+        DiscoverView_subjects: Page that allows user to choose which exam subjects did he take. It
+        is only required for first degree study fields
+        DiscoverView_main: Page which allows to choose attributes.
+    """
     degrees = ['I Stopień', 'II Stopień']
     if request.method == 'GET':
         context = {
@@ -317,6 +373,12 @@ def DiscoverView_degree(request):
         
     
 def DiscoverView_subjects(request):
+    """Second page of the DSS. It asks user to choose what subjects did he take at end of middle school.
+    Knowing the subjects it filters queryset of avielable study fields and stores it in session.
+
+    Returns:
+        DiscoverView_main: Page which allows to choose attributes.
+    """
     if request.method == 'GET':
         context = {
             'subjects': Subjects.objects.exclude(subject='0Nieznany Przedmiot').all()
@@ -332,12 +394,24 @@ def DiscoverView_subjects(request):
         return HttpResponseRedirect(reverse('DiscoverView_main'))
     
 def get_attributes_to_display(approved_attrs, excluded_attrs,filtered_fields):
+    """Funtion that creates a list of attributes to display for user in the next page.
+    It's supposed to be semi random so that most of the attributes come from study fields which already have some 
+    attributes approved by user.
+
+    Args:
+        approved_attrs (list): Contains attributes approbed by the user
+        excluded_attrs (list): Contains attributes that were excluded by the user
+        filtered_fields (list): Contains study fields which should the attributes come from
+
+    Returns:
+        list: Attibutes that should be displayed in the next form
+    """
     fields_with_approved_attrs = Characteristics.objects.filter(attribute__in=approved_attrs, field_of_study__in=filtered_fields).values_list('field_of_study',flat=True)
     prefered_attrs = list(Characteristics.objects.filter(field_of_study__in=fields_with_approved_attrs).exclude(attribute__in=excluded_attrs).exclude(attribute__in=approved_attrs).order_by('?').values_list('attribute__id',flat=True))
     prefered_attrs = list(dict.fromkeys(prefered_attrs))
     other_attrs = list(Characteristics.objects.exclude(attribute__in=prefered_attrs).exclude(attribute__in=approved_attrs).exclude(attribute__in=excluded_attrs).order_by('?').values_list('attribute__id',flat=True))
     other_attrs = list(dict.fromkeys(other_attrs))
-    print(f'Found {len(prefered_attrs)} prefered attrs and {len(other_attrs)} other')
+    #print(f'Found {len(prefered_attrs)} prefered attrs and {len(other_attrs)} other')
     
     attrs_to_display = []
     proportion = 0.8
@@ -364,14 +438,24 @@ def get_attributes_to_display(approved_attrs, excluded_attrs,filtered_fields):
                 attrs_to_display.append(prefered_attrs[0])
                 prefered_attrs.pop(0)
                 added_prefered += 1
-    print(f'{attrs_to_display} will be displayed with {added_prefered} prefered attrs and {added_other} other attrs.')
-    return attrs_to_display, added_prefered
+    #print(f'{attrs_to_display} will be displayed with {added_prefered} prefered attrs and {added_other} other attrs.')
+    return attrs_to_display
 
 def DiscoverView(request):
+    """Page that asks user to choose some attributes from the ones displayed.
+    Then it adds them to appropriate lists and repeats the process until the max amount or
+    repetitions is achieved or there are no more attributes to display.
+
+
+    Returns:
+        DiscoverView_results: Page that displays results of the DSS
+    """
     approved_attributes = request.POST.getlist('approved')
     excluded_attributes = request.POST.getlist('all')
+    
+    # If both POST attributes are empty it meas that session should be initialized
     if approved_attributes == [] and excluded_attributes == []:
-        print('Clearing data')
+        #print('Clearing data')
         request.session['discover_try'] = 0
         request.session['approved_attributes'] = []
         request.session['excluded_attributes'] = []
@@ -389,7 +473,7 @@ def DiscoverView(request):
     max_tries = 5
     if request.session['discover_try'] < max_tries and len(attrs_to_display) != 0:
     #if len(attrs_to_display) != 0:
-        print(request.session['approved_attributes'], request.session['excluded_attributes'])
+        #print(request.session['approved_attributes'], request.session['excluded_attributes'])
         context = {
             'attrs':Attributes.objects.filter(id__in=attrs_to_display).all(),
             'progress': round(request.session['discover_try']/max_tries,2)*100
@@ -399,12 +483,18 @@ def DiscoverView(request):
         return HttpResponseRedirect(reverse('DiscoverView_results'))
 
 def DiscoverResultsView(request):
+    """Result view for a DSS. It calculates the individual fit score for each study field.
+    The score is a percentage of points that given subject got out of all that could be possible
+    to achieve (all which were displayed).
+    """
+    
     results_of_fields = defaultdict(float)
     characteristics = Characteristics.objects.filter(
         field_of_study__in=request.session['filtered_fields'], 
         attribute__in=request.session['approved_attributes']
         ).all()
     
+    #Calculating score for each field
     for char in characteristics:
         results_of_fields[char.field_of_study.id] += char.fit
     
@@ -412,15 +502,16 @@ def DiscoverResultsView(request):
     shown_characteristics = request.session['approved_attributes']
     shown_characteristics.extend(request.session['excluded_attributes'])
 
+    # Converting the scores to percanges
     for key, value in results_of_fields.items():
         chars = list(Characteristics.objects.filter(field_of_study=key, attribute__id__in=shown_characteristics).values_list('fit',flat=True))
         results_of_fields[key] = (value*100)/sum(chars)
-        print(f'{key} - {results_of_fields[key]} ({len(chars)}/{Characteristics.objects.filter(field_of_study=key).values_list("fit",flat=True).count()}) - {Field_of_Study.objects.get(id=key)}')
+        #print(f'{key} - {results_of_fields[key]} ({len(chars)}/{Characteristics.objects.filter(field_of_study=key).values_list("fit",flat=True).count()}) - {Field_of_Study.objects.get(id=key)}')
 
-    # del request.session['discover_try']
-    # del request.session['approved_attributes']
-    # del request.session['excluded_attributes']
-    # del request.session['filtered_fields']
+    del request.session['discover_try']
+    del request.session['approved_attributes']
+    del request.session['excluded_attributes']
+    del request.session['filtered_fields']
 
     results_of_fields = dict(sorted(results_of_fields.items(), key=lambda x: x[1],reverse=True))
     results_top3 = []
@@ -438,48 +529,3 @@ def DiscoverResultsView(request):
             'results_rest':results_rest,
         }
     return render(request, 'supporting_system/discover_results_view.html', context)
-
-# def DiscoverResultsView(request):
-#     results_of_fields = defaultdict(float)
-#     try:
-#         print('Subjects: ',request.session['subjects'])
-#         filtered_fields = filter_by_subjects(
-#             Field_of_Study.objects.filter(degree__in=request.session['degree']).all(),
-#             request.session['subjects']
-#             )
-#         print(filtered_fields)
-#     except KeyError:
-#         print('Key error')
-#         filtered_fields = Field_of_Study.objects.filter()
-#     characteristics = Characteristics.objects.filter(
-#         field_of_study__in=filtered_fields, attribute__in=request.session['approved_attributes']
-#         ).all()
-    
-#     for char in characteristics:
-#         results_of_fields[char.field_of_study.id] += char.fit
-
-#     # del request.session['discover_try']
-#     # del request.session['approved_attributes']
-#     # del request.session['excluded_attributes']
-#     # del request.session['subjects']
-#     # del request.session['degree']
-
-#     results_of_fields = dict(sorted(results_of_fields.items(), key=lambda x: x[1],reverse=True))
-#     results_top3 = []
-#     results_rest = []
-#     for key, value in results_of_fields.items():
-#         if len(results_top3) < 3:
-#             results_top3.append(Field_of_Study.objects.get(id=key))
-#         elif value >= 1.0 and len(results_rest) < 10:
-#             results_rest.append(Field_of_Study.objects.get(id=key))
-#         else:
-#             break
-
-#     for key,value in results_of_fields.items():
-#         print(f'{key} - {value} - {Field_of_Study.objects.get(id=key)}')
-#     context = {
-#             'results_top3':results_top3,
-#             'results_rest':results_rest
-#         }
-#     return render(request, 'supporting_system/discover_results_view.html', context)
-
