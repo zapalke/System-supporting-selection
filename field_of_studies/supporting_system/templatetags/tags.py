@@ -75,3 +75,14 @@ def check_if_discover_url(url):
         return True
     else:
         return False
+    
+@register.filter(name='return_number_of_fields')
+def return_number_of_field(degree):
+    if degree != 'Magister':
+        return Field_of_Study.objects.exclude(degree='Magister').count()
+    else:
+        return Field_of_Study.objects.filter(degree='Magister').count()
+
+@register.simple_tag(name='return_number_of_uni')
+def return_number_of_uni():
+    return University.objects.count()

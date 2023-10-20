@@ -27,7 +27,7 @@
             <li> <a href="{% url 'DiscoverView' %}" class="nav-link px-2 {% if request.resolver_match.url_name|check_if_discover_url %}text-info{% else %}text-white{% endif %}"><i class="fa-solid fa-magnifying-glass fa-sm"></i> Odkryj swój kierunek</a></li>
             <li> <a href="{% url 'FieldListView' %}" class="nav-link px-2 {% if request.resolver_match.url_name == 'FieldListView' %}text-info{% else %}text-white{% endif %}"><i class="fa-solid fa-list fa-sm"></i> Lista kierunków</a></li>
             <li> <a href="{% url 'FieldListView' %}" class="nav-link px-2 {% if request.resolver_match.url_name == 'FieldListView' %}text-info{% else %}text-white{% endif %}"><i class="fa-solid fa-building-columns fa-sm"></i> Lista uczelni</a></li>
-            <li> <a href="{% url 'FieldListView' %}" class="nav-link px-2 {% if request.resolver_match.url_name == 'FieldListView' %}text-info{% else %}text-white{% endif %}"><i class="fa-solid fa-address-card fa-sm"></i> O stronie</a></li>
+            <li> <a href="{% url 'AboutView' %}" class="nav-link px-2 {% if request.resolver_match.url_name == 'AboutView' %}text-info{% else %}text-white{% endif %}"><i class="fa-solid fa-address-card fa-sm"></i> O stronie</a></li>
         </ul>
   
           <div class="text-end">

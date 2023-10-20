@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load tags %}
+{% block content %}
+
+<div class="container px-4 py-5" id="featured-3">
+    <div class="jumbotron">
+        <h2 class="display-4">O stronie</h2>
+        <hr class="my-4">
+    </div>
+    <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
+      <div class="feature col">
+        <div class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-2 mb-3">
+          <i class="fa-solid fa-scroll text-primary fa-xl py-3"></i>
+        </div>
+        <h3 class="fs-2 text-body-emphasis">Dlaczego strona powstała</h3>
+        <p class="lead">Aplikacja została stworzona jako praca inżynierska o tytule "System wspomagania decyzji przy wyborze kierunku studiów" na kierunku Inżynieria Systemów na uczelni Politechnika Wrocławska.
+            Celem pracy jest utworzenie systemu wspomagającego kandydata na studenta w wyborze odpowiedniego dla niego kierunku studiów oraz stworzenie bazy danych gromadzącą kierunki z wielu uczelni.
+        </p>
+
+      </div>
+      <div class="feature col">
+        <div class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-2 mb-3">
+            <i class="fa-solid fa-building-columns text-primary fa-xl py-3"></i>
+        </div>
+        <h3 class="fs-2 text-body-emphasis">Zawartość strony</h3>
+        <p class="lead">
+            Baza danych aktualnie zawiera {{"Niemagister"|return_number_of_fields}} kierunków I stopnia i {{"Magister"|return_number_of_fields}} kierunków II stopnia z {% return_number_of_uni %} uczelni.
+        </p>
+        <a href="{% url 'FieldListView' %}" class="icon-link">
+            Przejdź do listy kierunków
+            <svg class="bi"><use xlink:href="#chevron-right"></use></svg>
+          </a>
+
+      </div>
+      <div class="feature col">
+        <div class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-2 mb-3">
+            <i class="fa-brands fa-github text-primary fa-xl py-3"></i>
+        </div>
+        <h3 class="fs-2 text-body-emphasis">Kod aplikacji</h3>
+        <p class="lead">
+            Aplikacja jest dostępna dla każdego do pobrania z repozytorium na GitHubie
+        </p>
+        <a href="https://github.com/zapalke/System-supporting-selection/tree/main" class="icon-link">
+          Przejdź do repozytorium
+          <svg class="bi"><use xlink:href="#chevron-right"></use></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

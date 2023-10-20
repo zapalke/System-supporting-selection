@@ -15,6 +15,9 @@ from collections import defaultdict
 class MainPageView(TemplateView):
     template_name = 'supporting_system/main_page.html'
 
+class AboutView(TemplateView):
+    template_name = 'supporting_system/about_view.html'
+
 class AddUniversityView(LoginRequiredMixin,FormView):
     def get(self, request):
         form_class = AddUniversityForm
