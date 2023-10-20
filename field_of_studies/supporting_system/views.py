@@ -165,7 +165,7 @@ class AddAlternativeSubjectsToFieldView(LoginRequiredMixin, FormView):
     def post(self, request, *args, **kwargs):
         main_subject = Exam_Subjects.objects.get(id=self.kwargs.get('main_subject_id'))
 
-        print(request.POST.getlist('subjects'))
+        #print(request.POST.getlist('subjects'))
         for single_subject in request.POST.getlist('subjects'):
             subject = Subjects.objects.get(id=single_subject)
             if subject.subject != '0Nieznany Przedmiot':
@@ -466,7 +466,7 @@ def DiscoverView(request):
         request.session['discover_try'] += 1
         request.session.modified=True
 
-    attrs_to_display, added_prefered = get_attributes_to_display(
+    attrs_to_display = get_attributes_to_display(
         request.session['approved_attributes'],request.session['excluded_attributes'], 
         request.session['filtered_fields']
         )

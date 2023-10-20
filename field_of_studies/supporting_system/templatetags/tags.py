@@ -70,7 +70,6 @@ def return_current_filters(initials:dict):
 
 @register.filter(name='check_if_discover_url')
 def check_if_discover_url(url):
-    print(url)
     if 'Discover' in url:
         return True
     else:
