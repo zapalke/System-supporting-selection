@@ -16,5 +16,4 @@ urlpatterns = [
     path('DiscoverView/subjects', DiscoverView_subjects, name='DiscoverView_subjects'),
     path('DiscoverView/main', DiscoverView, name='DiscoverView_main'),
     path('DiscoverView/results', DiscoverResultsView, name='DiscoverView_results'),
-    path('UniListView', FieldView, name='UniListView')
 ]

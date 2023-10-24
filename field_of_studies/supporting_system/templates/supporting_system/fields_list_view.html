@@ -79,6 +79,18 @@
 </div>
 
 <div class="container mt-3 border border-secondary p-3 rounded">
+    <div class="row">
+        <div class="col-sm">
+            <h4 class="bold">Nazwa kierunku</h4>
+        </div>
+        <div class="col-sm">
+            <h4>Uczelnia</h4>
+        </div>
+        <div class="col-sm">
+            <h4>Stopień studiów</h4>
+        </div>
+        <hr class="border border-3 border-secondary opticity-75 my-3">
+    </div>
     {% for field in fields %}
         <div class="row jumbotron mb-3" data-bs-toggle="collapse" data-bs-target="#{{ field.id }}" aria-expanded="false">
             <div class="col-sm">

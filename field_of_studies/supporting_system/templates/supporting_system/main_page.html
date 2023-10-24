@@ -3,9 +3,9 @@
 {% block content %}
 <div class="p-5 mb-4 bg-light rounded-3">
     <div class="container-fluid py-5">
-      <h1 class="display-5 fw-bold">Odkryj swój kierunek studiów</h1>
+      <h1 class="display-5 fw-bold">Znajdź swój kierunek studiów</h1>
       <p class="col-md-8 fs-4">Odpowiedz na kilka pytań a system zasugeruje ci który kierunek studiów i na jakiej uczelni jest najlepiej do ciebie dopasowany.</p>
-      <button class="btn btn-primary btn-lg" type="button" onclick="location.href='{% url 'DiscoverView' %}'">Okdryj kierunek</button>
+      <button class="btn btn-primary btn-lg" type="button" onclick="location.href='{% url 'DiscoverView' %}'">Znajdź kierunek</button>
     </div>
 </div>
 <div class="row align-items-md-stretch">
@@ -18,9 +18,9 @@
     </div>
     <div class="col-md-6">
       <div class="h-100 p-5 bg-light border rounded-3">
-        <h2>Sprawdź wszystkie uczelnie</h2>
-        <p>Sprawdż co mają do zaoferowania poszczególne uczelnie. Możesz przejrzeć wszystkie uczelnie oraz kierunki które oferują.</p>
-        <button class="btn btn-outline-secondary" type="button" onclick="location.href='{% url 'UniListView' %}'">Przejrzyj uczelnie</button>
+        <h2>Dowiedz się więcej.</h2>
+        <p>Sprawdź więcej informacji o stronie i o samym projekcie.</p><br>
+        <button class="btn btn-outline-secondary" type="button" onclick="location.href='{% url 'AboutView' %}'">O stronie</button>
       </div>
     </div>
 </div>
