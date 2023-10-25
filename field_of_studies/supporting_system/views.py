@@ -406,12 +406,17 @@ def get_attributes_to_display(approved_attrs, excluded_attrs,filtered_fields):
     Returns:
         list: Attibutes that should be displayed in the next form
     """
+    # fields_with_approved_attrs = Characteristics.objects.filter(attribute__in=approved_attrs, field_of_study__in=filtered_fields).values_list('field_of_study',flat=True)
+    # prefered_attrs = list(Characteristics.objects.filter(field_of_study__in=fields_with_approved_attrs).exclude(attribute__in=excluded_attrs).exclude(attribute__in=approved_attrs).order_by('?').values_list('attribute__id',flat=True))
+    # prefered_attrs = list(dict.fromkeys(prefered_attrs))
+    # other_attrs = list(Characteristics.objects.exclude(attribute__in=prefered_attrs).exclude(attribute__in=approved_attrs).exclude(attribute__in=excluded_attrs).order_by('?').values_list('attribute__id',flat=True))
+    # other_attrs = list(dict.fromkeys(other_attrs))
+    
     fields_with_approved_attrs = Characteristics.objects.filter(attribute__in=approved_attrs, field_of_study__in=filtered_fields).values_list('field_of_study',flat=True)
-    prefered_attrs = list(Characteristics.objects.filter(field_of_study__in=fields_with_approved_attrs).exclude(attribute__in=excluded_attrs).exclude(attribute__in=approved_attrs).order_by('?').values_list('attribute__id',flat=True))
-    prefered_attrs = list(dict.fromkeys(prefered_attrs))
+    prefered_attrs = Counter(Characteristics.objects.filter(field_of_study__in=fields_with_approved_attrs).exclude(attribute__in=excluded_attrs).exclude(attribute__in=approved_attrs).values_list('attribute__id',flat=True))
+    prefered_attrs = [key for key, value in sorted(prefered_attrs.items(), key=lambda item: item[1], reverse=True)]
     other_attrs = list(Characteristics.objects.exclude(attribute__in=prefered_attrs).exclude(attribute__in=approved_attrs).exclude(attribute__in=excluded_attrs).order_by('?').values_list('attribute__id',flat=True))
     other_attrs = list(dict.fromkeys(other_attrs))
-    #print(f'Found {len(prefered_attrs)} prefered attrs and {len(other_attrs)} other')
     
     attrs_to_display = []
     proportion = 0.8
