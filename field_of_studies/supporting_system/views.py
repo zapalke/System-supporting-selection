@@ -400,7 +400,26 @@ def DiscoverView_subjects(request):
                 )
             request.session['filtered_fields'] = fields_matching_subjects
         return HttpResponseRedirect(reverse('DiscoverView_main'))
-    
+
+def DiscoverView_cities(request):
+    """Second page of the DSS. It asks user to choose what subjects did he take at end of middle school.
+    Knowing the subjects it filters queryset of avielable study fields and stores it in session.
+
+    Returns:
+        DiscoverView_main: Page which allows to choose attributes.
+    """
+    if request.method == 'GET':
+        context = {
+            'subjects': University.objects.values_list('city',flat=True).distinct()
+        }
+        return render(request, 'supporting_system/discover_cities_view.html', context)
+    else:
+        if request.POST.getlist('cities'):
+            request.session['cities'] = request.POST.getlist('cities')
+        else:
+            request.session['cities'] = list(University.objects.values_list('city',flat=True).distinct())
+        return HttpResponseRedirect(reverse('DiscoverView_main'))
+
 def get_attributes_to_display(approved_attrs, excluded_attrs,filtered_fields):
     """Funtion that creates a list of attributes to display for user in the next page.
     It's supposed to be semi random so that most of the attributes come from study fields which already have some 
