@@ -9,7 +9,7 @@ from .forms import ( AddFieldForm, ExamSubjectForm, FieldFilterForm,
                     AlternativeExamSubjectForm, CharacteristicsForm)
 from .models import (Field_of_Study, University, Subjects,Exam_Subjects, 
                      Alternative_Exam_Subjects, Attributes, Characteristics)
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 
 class MainPageView(TemplateView):
