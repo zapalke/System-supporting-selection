@@ -356,6 +356,14 @@ def DiscoverView_degree(request):
         is only required for first degree study fields
         DiscoverView_main: Page which allows to choose attributes.
     """
+    try:
+        del request.session['discover_try']
+        del request.session['approved_attributes']
+        del request.session['excluded_attributes']
+        del request.session['filtered_fields']
+    except KeyError:
+        pass
+        
     degrees = ['I Stopień', 'II Stopień']
     if request.method == 'GET':
         context = {
@@ -512,11 +520,6 @@ def DiscoverResultsView(request):
         chars = list(Characteristics.objects.filter(field_of_study=key, attribute__id__in=shown_characteristics).values_list('fit',flat=True))
         results_of_fields[key] = (value*100)/sum(chars)
         #print(f'{key} - {results_of_fields[key]} ({len(chars)}/{Characteristics.objects.filter(field_of_study=key).values_list("fit",flat=True).count()}) - {Field_of_Study.objects.get(id=key)}')
-
-    del request.session['discover_try']
-    del request.session['approved_attributes']
-    del request.session['excluded_attributes']
-    del request.session['filtered_fields']
 
     results_of_fields = dict(sorted(results_of_fields.items(), key=lambda x: x[1],reverse=True))
     results_top3 = []
