@@ -19,7 +19,10 @@
         {% csrf_token %}
         <div class="container mx-auto p-3 bg-white rounded border" style="max-width: 650px;">
             <h4 class="text-center pb-2">Wybierz pasujące do ciebie tematyki.</h4>
-            <h5 class="text-center pb-2"> Postęp: {{progress}}%</h5>
+            <div class="progress">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ progress }}%;"></div>
+            </div>
+            <br>
             {% for attribute in attrs %}
               <div class="form-check d-flex align-items-center mb-3">
                   <input type="checkbox" class="form-check-input" id="{{ attribute.id }}" name="approved" value="{{ attribute.id }}">

@@ -15,18 +15,18 @@
 </div>
 
 <div class="container my-3">
-    <form method="post">
+    <form method="post" onsubmit="return validateForm()">
         {% csrf_token %}
         <div class="container mx-auto p-3 bg-white rounded border" style="max-width: 650px;">
-            <h4 class="text-center pb-2">Wybierz przedmioty zdawane na maturze (możesz pominąć).</h4>
+            <h4 class="text-center pb-2">Wybierz przedmioty preferowane uczelnie.</h4>
             <div class="progress">
                 <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ progress }}%;"></div>
             </div>
             <br>
-            {% for subject in subjects %}
+            {% for uni in universities %}
               <div class="form-check d-flex align-items-center mb-3">
-                  <input type="checkbox" class="form-check-input" id="{{ subject.id }}" name="subjects" value="{{ subject.id }}">
-                  <label class="form-check-label fs-5 ms-2" for="{{ subject.id }}">{{ subject.subject }}</label>
+                  <input type="checkbox" class="form-check-input" id="{{ uni.id }}" name="university" value="{{ uni.id }}">
+                  <label class="form-check-label fs-5 ms-2" for="{{ uni.id }}">{{ uni.name }}</label>
               </div>
             {% endfor %}
             <hr class="my-4">
@@ -35,7 +35,24 @@
     </form>
 </div>
 
+<script>
+    function validateForm() {
+        var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        var checked = false;
 
+        for (var i = 0; i < checkboxes.length; i++) {
+            if (checkboxes[i].checked) {
+                checked = true;
+                break;
+            }
+        }
+
+        if (!checked) {
+            alert("Proszę wybierz przynajmniej 1 opcję.");
+            return false;
+        }
+    }
+</script>
 
 
     

@@ -348,8 +348,8 @@ def FieldView(request):
 # Decission Supporting System based on candiate best fit (percentage of characteristics that were choosen by the user) for given field 
 
 def DiscoverView_degree(request):
-    """First page of the DSS. It asks user to choose which level of study fields is he looking for.
-    This page uses django sessions to store information about the user
+    """The first criterion of DSS. It asks user to choose which level of study fields is he looking for.
+    Then it filters avielable study fields. This page uses django sessions to store information about the user
 
     Returns:
         DiscoverView_subjects: Page that allows user to choose which exam subjects did he take. It
@@ -357,17 +357,23 @@ def DiscoverView_degree(request):
         DiscoverView_main: Page which allows to choose attributes.
     """
     try:
-        del request.session['discover_try']
+        del request.session['discover_progress']
+        del request.session['discover_try_attributes']
         del request.session['approved_attributes']
         del request.session['excluded_attributes']
         del request.session['filtered_fields']
     except KeyError:
         pass
-        
+    
+    request.session['discover_try_attributes'] = 5
+    request.session['discover_progress'] = 0
+    request.session['discover_max_pages'] = 4 + request.session['discover_try_attributes']
+    
     degrees = ['I Stopień', 'II Stopień']
     if request.method == 'GET':
         context = {
-            'degree': degrees
+            'degree': degrees,
+            'progress': int(request.session['discover_progress']/request.session['discover_max_pages']*100)
         }
         return render(request, 'supporting_system/discover_degree_view.html', context)
     else:
@@ -377,19 +383,22 @@ def DiscoverView_degree(request):
             return HttpResponseRedirect(reverse('DiscoverView_subjects'))
         else:
             request.session['filtered_fields'] = list(Field_of_Study.objects.filter(degree='Magister').values_list('id',flat=True))
-            return HttpResponseRedirect(reverse('DiscoverView_main'))
+            return HttpResponseRedirect(reverse('DiscoverView_cities'))
         
     
 def DiscoverView_subjects(request):
-    """Second page of the DSS. It asks user to choose what subjects did he take at end of middle school.
+    """The second criterion of DSS. It asks user to choose what subjects did he take at end of middle school.
     Knowing the subjects it filters queryset of avielable study fields and stores it in session.
 
     Returns:
-        DiscoverView_main: Page which allows to choose attributes.
+        DiscoverView_cities: Page which allows to choose cities.
     """
+    
     if request.method == 'GET':
+        request.session['discover_progress'] += 1
         context = {
-            'subjects': Subjects.objects.exclude(subject='0Nieznany Przedmiot').all()
+            'subjects': Subjects.objects.exclude(subject='0Nieznany Przedmiot').all(),
+            'progress': int(request.session['discover_progress']/request.session['discover_max_pages']*100)
         }
         return render(request, 'supporting_system/discover_subjects_view.html', context)
     else:
@@ -399,32 +408,55 @@ def DiscoverView_subjects(request):
                 request.POST.getlist('subjects')
                 )
             request.session['filtered_fields'] = fields_matching_subjects
-        return HttpResponseRedirect(reverse('DiscoverView_main'))
+        return HttpResponseRedirect(reverse('DiscoverView_cities'))
 
 def DiscoverView_cities(request):
-    """Second page of the DSS. It asks user to choose what subjects did he take at end of middle school.
-    Knowing the subjects it filters queryset of avielable study fields and stores it in session.
+    """The third criterion of DSS. It asks user to choose if he has any preferences regarding the city where 
+    he would like to study. Note that this criteria does not work like a filter, at the end it will be added as 
+    a metric to the overall study field score. List of cities is stored in session.
 
     Returns:
         DiscoverView_main: Page which allows to choose attributes.
     """
+    
     if request.method == 'GET':
+        request.session['discover_progress'] += 1
         context = {
-            'subjects': University.objects.values_list('city',flat=True).distinct()
+            'cities': University.objects.values_list('city',flat=True).distinct(),
+            'progress': int(request.session['discover_progress']/request.session['discover_max_pages']*100)
         }
         return render(request, 'supporting_system/discover_cities_view.html', context)
     else:
         if request.POST.getlist('cities'):
             request.session['cities'] = request.POST.getlist('cities')
-        else:
-            request.session['cities'] = list(University.objects.values_list('city',flat=True).distinct())
+        print(request.session['cities'])
+        return HttpResponseRedirect(reverse('DiscoverView_uni'))
+    
+def DiscoverView_uni(request):
+    """The fourth criterion of DSS. It asks user to choose if he has any preferences regarding the city where 
+    he would like to study. Note that this criteria does not work like a filter, at the end it will be added as 
+    a metric to the overall study field score. List of cities is stored in session.
+
+    Returns:
+        DiscoverView_main: Page which allows to choose attributes.
+    """
+    if request.method == 'GET':
+        request.session['discover_progress'] += 1
+        context = {
+            'universities': University.objects.all(),
+            'progress': int(request.session['discover_progress']/request.session['discover_max_pages']*100)
+        }
+        return render(request, 'supporting_system/discover_uni_view.html', context)
+    else:
+        if request.POST.getlist('university'):
+            request.session['university'] = request.POST.getlist('university')
+        print(request.session['university'])
         return HttpResponseRedirect(reverse('DiscoverView_main'))
 
 def get_attributes_to_display(approved_attrs, excluded_attrs,filtered_fields):
     """Funtion that creates a list of attributes to display for user in the next page.
     It's supposed to be semi random so that most of the attributes come from study fields which already have some 
     attributes approved by user.
-
     Args:
         approved_attrs (list): Contains attributes approbed by the user
         excluded_attrs (list): Contains attributes that were excluded by the user
@@ -488,27 +520,26 @@ def DiscoverView(request):
     # If both POST attributes are empty it meas that session should be initialized
     if approved_attributes == [] and excluded_attributes == []:
         #print('Clearing data')
-        request.session['discover_try'] = 0
         request.session['approved_attributes'] = []
         request.session['excluded_attributes'] = []
     else:
         request.session['approved_attributes'].extend(approved_attributes)
         excluded_attributes = [x for x in excluded_attributes if x not in approved_attributes]
         request.session['excluded_attributes'].extend(excluded_attributes)
-        request.session['discover_try'] += 1
+        request.session['discover_try_attributes'] -= 1
+        
         request.session.modified=True
-
+    
+    
+    request.session['discover_progress'] += 1
     attrs_to_display = get_attributes_to_display(
         request.session['approved_attributes'],request.session['excluded_attributes'], 
         request.session['filtered_fields']
         )
-    max_tries = 5
-    if request.session['discover_try'] < max_tries and len(attrs_to_display) != 0:
-    #if len(attrs_to_display) != 0:
-        #print(request.session['approved_attributes'], request.session['excluded_attributes'])
+    if request.session['discover_try_attributes'] > 0 and len(attrs_to_display) != 0:
         context = {
             'attrs':Attributes.objects.filter(id__in=attrs_to_display).all(),
-            'progress': round(request.session['discover_try']/max_tries,2)*100
+            'progress': int(request.session['discover_progress']/request.session['discover_max_pages']*100)
         }
         return render(request, 'supporting_system/discover_view.html', context)
     else:
