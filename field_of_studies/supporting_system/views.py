@@ -687,10 +687,30 @@ def DiscoverResultsView(request):
     results_top3 = []
     results_rest = []
     for key, value in results_of_fields.items():
+        temp_data_to_display = {
+            'field':Field_of_Study.objects.get(id=key),
+            'result':round(value,2),
+            'characteristics':[
+                Characteristics.objects.filter(field_of_study=key, attribute__id__in=shown_characteristics).count(),
+                Characteristics.objects.filter(field_of_study=key).count(),
+                characteristics_score
+                ],
+            'city':[
+                cities_results[key],
+                city_score
+                ],
+            'uni':[
+                uni_results[key],
+                uni_score
+                ],
+            'uni_rank':[
+                uni_rank_score
+                ],
+        }
         if len(results_top3) < 3:
-            results_top3.append([Field_of_Study.objects.get(id=key), round(value,2), Characteristics.objects.filter(field_of_study=key, attribute__id__in=shown_characteristics).count(),Characteristics.objects.filter(field_of_study=key).count()])
+            results_top3.append(temp_data_to_display)
         elif len(results_rest) < 10:
-            results_rest.append([Field_of_Study.objects.get(id=key), round(value,2), Characteristics.objects.filter(field_of_study=key, attribute__id__in=shown_characteristics).count(),Characteristics.objects.filter(field_of_study=key).count()])
+            results_rest.append(temp_data_to_display)
         else:
             break
         
