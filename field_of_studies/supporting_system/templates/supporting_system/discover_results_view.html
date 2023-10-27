@@ -24,7 +24,6 @@
             </div>
             <div class="col-4 align-self-lg-auto border border-3 border-success rounded bg-white" style="margin-top: 5px;">
                 <h4 class="text-center py-1 mb-0">Dopasowanie: {{ result }}%</h4>
-                <p class="text-center small py-1 mb-0">Wyliczone na podstawie {{shown_chars}} wyświetlonych cech z {{all_chars}} przypisanych do kierunku.</p>
             </div>
             
             <div class="col-1"></div>
@@ -85,32 +84,47 @@
                     </div>    
                 </div>    
             </div>
-            <p class='fw-light'>{{field.description}}</p>
+            <div class="row p-1">
+                <div class="col-md-6 mb-3">
+                    <div class="border border-1 border-secondary bg-white p-2 rounded">
+                        <p class='fw-light'>{{field.description}}</p>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="border border-1 border-warning bg-white p-2 rounded">
+                        <h5>Ocena została wyliczona na podstawie</h5>
+                            <ul>
+                                <li>
+                                    {{shown_chars}} wyświetlonych tematyk z {{all_chars}} przypisanych do kierunku.
+                                </li>
+                            </ul>
+                    </div>
+                </div> 
+            </div> 
             <a class="btn btn-info" href='{{field.link_to_site}}'>Przejdź do strony kierunku</a>
         </div>
     {% endfor %}
 </div>
 {% if results_rest %}
     <h3>Reszta dopasowanych kierunków</h3>
-    <div class="container mt-3 border border-secondary p-3 rounded">
+    <div class="container mt-3 border border-secondary p-2 rounded">
         {% for field, result, shown_chars, all_chars in results_rest %}
-            <div class="row jumbotron mb-3" data-bs-toggle="collapse" data-bs-target="#{{ field.id }}" aria-expanded="false">
-                <div class="col-sm">
+            <div class="row jumbotron mb-2" data-bs-toggle="collapse" data-bs-target="#{{ field.id }}" aria-expanded="false">
+                <div class="col-4">
                     <h5 class="bold">{{field.name}}</h5>
                 </div>
-                <div class="col-sm">
-                    <h5 class="text-center">{{field.university.name}}</h5>
+                <div class="col-4">
+                    <h5>{{field.university.name}}</h5>
                 </div>
-                <div class="col-sm">
-                    <h5 class="text-center">
+                <div class="col-2">
+                    <h5>
                     {{field.degree}}
                     </h5>
                 </div>
-                <div class="col-sm">
-                    <h6 class="text-left">
-                        Dopasowanie - {{result}}% <br>
-                        Cechy wyświetlone/wszystkie - {{shown_chars}}/{{all_chars}}
-                    </h6>
+                <div class="col-2 justify-content-end">
+                    <h5>
+                        Dopasowanie {{result}}%
+                    </h5>
                 </div>
                 <div id="{{ field.id }}" class="collapse" data-parent="#container">
                     <div class="container border border-info border-1 rounded p-3">
@@ -168,7 +182,23 @@
                                 </div>    
                             </div>    
                         </div>
-                        <p class='fw-light'>{{field.description}}</p>
+                        <div class="row p-1">
+                            <div class="col-md-6 mb-3">
+                                <div class="border border-1 border-secondary bg-white p-2 rounded">
+                                    <p class='fw-light'>{{field.description}}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="border border-1 border-warning bg-white p-2 rounded">
+                                    <h5>Ocena została wyliczona na podstawie</h5>
+                                        <ul>
+                                            <li>
+                                                {{shown_chars}} wyświetlonych tematyk z {{all_chars}} przypisanych do kierunku.
+                                            </li>
+                                        </ul>
+                                </div>
+                            </div> 
+                        </div> 
                         <a class="btn btn-info" href='{{field.link_to_site}}'>Przejdź do strony kierunku</a>
                     </div>
                 </div>

@@ -378,7 +378,6 @@ def DiscoverView_criteria(request):
         }
         return render(request, 'supporting_system/discover_criteria_view.html', context)
     else:
-        print(request.POST)
         if request.POST.get('city'):
              city_score = int(request.POST.get('city'))
              if city_score == 0:
@@ -399,7 +398,7 @@ def DiscoverView_criteria(request):
         request.session['criteria'] = {
             'city':city_score,'uni':uni_score,'uni_rank':uni_rank_score,'characteristics':characteristics_score
         }
-
+        print(request.session)
         return HttpResponseRedirect(reverse('DiscoverView_degree'))
 
 def DiscoverView_degree(request):
@@ -462,6 +461,8 @@ def DiscoverView_cities(request):
     Returns:
         DiscoverView_main: Page which allows to choose attributes.
     """
+    if request.session['criteria']['city'] == 0:
+        return HttpResponseRedirect(reverse('DiscoverView_uni'))
     
     if request.method == 'GET':
         request.session['discover_progress'] += 1
@@ -484,6 +485,9 @@ def DiscoverView_uni(request):
     Returns:
         DiscoverView_main: Page which allows to choose attributes.
     """
+    if request.session['criteria']['uni'] == 0:
+        return HttpResponseRedirect(reverse('DiscoverView_main'))
+
     if request.method == 'GET':
         request.session['discover_progress'] += 1
         context = {
@@ -558,62 +562,126 @@ def DiscoverView(request):
     Returns:
         DiscoverView_results: Page that displays results of the DSS
     """
-    approved_attributes = request.POST.getlist('approved')
-    excluded_attributes = request.POST.getlist('all')
-    
-    # If both POST attributes are empty it meas that session should be initialized
-    if approved_attributes == [] and excluded_attributes == []:
-        #print('Clearing data')
-        request.session['approved_attributes'] = []
-        request.session['excluded_attributes'] = []
-    else:
-        request.session['approved_attributes'].extend(approved_attributes)
-        excluded_attributes = [x for x in excluded_attributes if x not in approved_attributes]
-        request.session['excluded_attributes'].extend(excluded_attributes)
-        request.session['discover_try_attributes'] -= 1
-        
-        request.session.modified=True
-    
-    
-    request.session['discover_progress'] += 1
-    attrs_to_display = get_attributes_to_display(
-        request.session['approved_attributes'],request.session['excluded_attributes'], 
-        request.session['filtered_fields']
-        )
-    if request.session['discover_try_attributes'] > 0 and len(attrs_to_display) != 0:
-        context = {
-            'attrs':Attributes.objects.filter(id__in=attrs_to_display).all(),
-            'progress': int(request.session['discover_progress']/request.session['discover_max_pages']*100)
-        }
-        return render(request, 'supporting_system/discover_view.html', context)
-    else:
+    if request.session['criteria']['characteristics'] == 0:
         return HttpResponseRedirect(reverse('DiscoverView_results'))
+    else:
+        approved_attributes = request.POST.getlist('approved')
+        excluded_attributes = request.POST.getlist('all')
+        
+        # If both POST attributes are empty it meas that session should be initialized
+        if approved_attributes == [] and excluded_attributes == []:
+            #print('Clearing data')
+            request.session['approved_attributes'] = []
+            request.session['excluded_attributes'] = []
+        else:
+            request.session['approved_attributes'].extend(approved_attributes)
+            excluded_attributes = [x for x in excluded_attributes if x not in approved_attributes]
+            request.session['excluded_attributes'].extend(excluded_attributes)
+            request.session['discover_try_attributes'] -= 1
+            
+            request.session.modified=True
+        
+        
+        request.session['discover_progress'] += 1
+        attrs_to_display = get_attributes_to_display(
+            request.session['approved_attributes'],request.session['excluded_attributes'], 
+            request.session['filtered_fields']
+            )
+        if request.session['discover_try_attributes'] > 0 and len(attrs_to_display) != 0:
+            context = {
+                'attrs':Attributes.objects.filter(id__in=attrs_to_display).all(),
+                'progress': int(request.session['discover_progress']/request.session['discover_max_pages']*100)
+            }
+            return render(request, 'supporting_system/discover_view.html', context)
+        else:
+            return HttpResponseRedirect(reverse('DiscoverView_results'))
 
-def DiscoverResultsView(request):
-    """Result view for a DSS. It calculates the individual fit score for each study field.
+def calculate_characteristics_score(approved_attrs, excluded_attrs,filtered_fields):
+    """Function that calculates the score of given study field based on the attributes that were approved by user.
     The score is a percentage of points that given subject got out of all that could be possible
     to achieve (all which were displayed).
+
+    Args:
+        approved_attrs (list): Contains attributes approbed by the user
+        excluded_attrs (list): Contains attributes that were excluded by the user
+        filtered_fields (list): Contains study fields which should the attributes come from
+
+    Returns:
+        dict: Dictionary with study field id as key and score as value
     """
-    
     results_of_fields = defaultdict(float)
     characteristics = Characteristics.objects.filter(
-        field_of_study__in=request.session['filtered_fields'], 
-        attribute__in=request.session['approved_attributes']
+        field_of_study__in=filtered_fields, 
+        attribute__in=approved_attrs
         ).all()
     
     #Calculating score for each field
     for char in characteristics:
         results_of_fields[char.field_of_study.id] += char.fit
-    
-    #Other version of algorythm using percentage of sum of all characteristics)
-    shown_characteristics = request.session['approved_attributes']
-    shown_characteristics.extend(request.session['excluded_attributes'])
 
-    # Converting the scores to percanges
+    #Other version of algorythm using percentage of sum of all characteristics)
+    shown_characteristics = approved_attrs
+    shown_characteristics.extend(excluded_attrs)
+    
+    # Converting the scores to percanges of shown items
     for key, value in results_of_fields.items():
-        chars = list(Characteristics.objects.filter(field_of_study=key, attribute__id__in=shown_characteristics).values_list('fit',flat=True))
-        results_of_fields[key] = (value*100)/sum(chars)
-        #print(f'{key} - {results_of_fields[key]} ({len(chars)}/{Characteristics.objects.filter(field_of_study=key).values_list("fit",flat=True).count()}) - {Field_of_Study.objects.get(id=key)}')
+        chars = list(Characteristics.objects.filter(field_of_study=key, attribute__id__in=approved_attrs).values_list('fit',flat=True))
+        results_of_fields[key] = round(value/sum(chars),2)
+    print(f'Characteristics results: {results_of_fields}')
+    return results_of_fields, shown_characteristics
+
+def calculate_city_score(cities,filtered_fields):
+    """Function that calculates the score of given study field based on the city where the university is located."""
+    results_of_fields = defaultdict(int)
+    study_fields = Field_of_Study.objects.filter(id__in=filtered_fields).all()
+    for field in filtered_fields:
+        if study_fields.get(id=field).university.city in cities:
+            results_of_fields[field] += 1
+        else:
+            results_of_fields[field] = 0
+    print(f'City results: {results_of_fields}')
+    return results_of_fields
+
+def calculate_uni_score(universities,filtered_fields):
+    """Function that calculates the score of given study field based on the university where the field is taught."""
+    results_of_fields = defaultdict(int)
+    study_fields = Field_of_Study.objects.filter(id__in=filtered_fields).all()
+    for field in filtered_fields:
+        if study_fields.get(id=field).university in universities:
+            results_of_fields[field] += 1
+        else:
+            results_of_fields[field] = 0
+    print(f'Uni results: {results_of_fields}')
+    return results_of_fields
+
+def calculate_uni_rank_score(filtered_fields):
+    """Function that calculates the score of given study field based on the rank of university where the field is taught."""
+    results_of_fields = defaultdict(int)
+    study_fields = Field_of_Study.objects.filter(id__in=filtered_fields).all()
+    for field in filtered_fields:
+        results_of_fields[field] = round(1/study_fields.get(id=field).university.rank_overall,2)
+    print(f'Uni rank results: {results_of_fields}')
+    return results_of_fields
+
+def DiscoverResultsView(request):
+    """Result view for a DSS. It calculates the individual fit score for each study field.
+    The score is a percentage of points that given subject got out of all th
+    at could be possible
+    to achieve (all which were displayed).
+    """
+    
+    results_of_fields = defaultdict(float)
+    characteristics_results, shown_characteristics = calculate_characteristics_score(request.session['approved_attributes'],request.session['excluded_attributes'],request.session['filtered_fields'])
+    cities_results = calculate_city_score(request.session['cities'],request.session['filtered_fields'])
+    uni_results = calculate_uni_score(request.session['university'],request.session['filtered_fields'])
+    uni_rank_result = calculate_uni_rank_score(request.session['filtered_fields'])
+
+    city_score, uni_score, uni_rank_score, characteristics_score = request.session['criteria']['city'], request.session['criteria']['uni'], request.session['criteria']['uni_rank'], request.session['criteria']['characteristics']
+    best_score = city_score + uni_score + uni_rank_score + characteristics_score
+
+    # Calculating final score for each field
+    for field in request.session['filtered_fields']:
+        results_of_fields[field] = (city_score*cities_results[field] + uni_score*uni_results[field] + uni_rank_score*uni_rank_result[field] + characteristics_score*characteristics_results[field])/best_score*100
 
     results_of_fields = dict(sorted(results_of_fields.items(), key=lambda x: x[1],reverse=True))
     results_top3 = []
@@ -621,7 +689,7 @@ def DiscoverResultsView(request):
     for key, value in results_of_fields.items():
         if len(results_top3) < 3:
             results_top3.append([Field_of_Study.objects.get(id=key), round(value,2), Characteristics.objects.filter(field_of_study=key, attribute__id__in=shown_characteristics).count(),Characteristics.objects.filter(field_of_study=key).count()])
-        elif value >= 25.0 and len(results_rest) < 10:
+        elif len(results_rest) < 10:
             results_rest.append([Field_of_Study.objects.get(id=key), round(value,2), Characteristics.objects.filter(field_of_study=key, attribute__id__in=shown_characteristics).count(),Characteristics.objects.filter(field_of_study=key).count()])
         else:
             break
