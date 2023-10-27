@@ -27,15 +27,16 @@
                 <div class="form-row align-items-center mb-3">
                     <div class="col">
                         <label class="form-check-label fs-5 ms-2" for="{{ key }}">{{ value }}</label>
-                        <input type="hidden" name="{{ key }}" value="0">
                     </div>
-                    <div class="col">
+                    <div class="col py-1 px-2">
+                        Słabo &nbsp;  
                         {% for star in "012345" %}
                             <div class="form-check form-check-inline">
                                 <input type="radio" class="form-check-input" id="{{ key }}_{{ star }}" name="{{ key }}" value="{{ star }}" {% if forloop.first %}checked{% endif %}>
                                 <label class="form-check-label" for="{{ key }}_{{ star }}">{{ star }}</label>
                             </div>
-                        {% endfor %}   
+                        {% endfor %}
+                        Mocno   
                     </div>
                 </div>
             {% endfor %}
