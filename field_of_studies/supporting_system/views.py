@@ -347,6 +347,61 @@ def FieldView(request):
 
 # Decission Supporting System based on candiate best fit (percentage of characteristics that were choosen by the user) for given field 
 
+def DiscoverView_criteria(request):
+    """The page that starts DSS. It asks user to choose what and how important are some criteria for him.
+    It later stores the information in django sessions.
+
+    Returns:
+        DiscoverView_degree: Page which allows to choose which level of study fields is user looking for.
+    """
+    
+    if request.method == 'GET':
+        try:
+            del request.session['discover_progress']
+            del request.session['discover_try_attributes']
+            del request.session['approved_attributes']
+            del request.session['excluded_attributes']
+            del request.session['filtered_fields']
+        except KeyError:
+            pass
+        criteria = {
+                    'city':'Miasto studiowania','uni':'Uniwersytet','uni_rank':'Ranking uczelni',
+                    'characteristics':'Lubiane tematyki'
+            }
+        request.session['discover_try_attributes'] = 5
+        request.session['discover_progress'] = 0
+        request.session['discover_max_pages'] = 3 + len(criteria) + request.session['discover_try_attributes']
+
+        context = {
+            'criteria': criteria,
+            'progress': int(request.session['discover_progress']/request.session['discover_max_pages']*100)
+        }
+        return render(request, 'supporting_system/discover_criteria_view.html', context)
+    else:
+        print(request.POST)
+        if request.POST.get('city'):
+             city_score = int(request.POST.get('city'))
+             if city_score == 0:
+                 request.session['discover_max_pages'] -= 1
+        if request.POST.get('uni'):
+            uni_score = int(request.POST.get('uni'))
+            if uni_score == 0:
+                 request.session['discover_max_pages'] -= 1
+        if request.POST.get('uni_rank'):
+            uni_rank_score = int(request.POST.get('uni_rank'))
+            if uni_rank_score == 0:
+                 request.session['discover_max_pages'] -= 1
+        if request.POST.get('characteristics'):
+            characteristics_score = int(request.POST.get('characteristics'))
+            if characteristics_score == 0:
+                 request.session['discover_max_pages'] -= request.session['discover_try_attributes']
+
+        request.session['criteria'] = {
+            'city':city_score,'uni':uni_score,'uni_rank':uni_rank_score,'characteristics':characteristics_score
+        }
+
+        return HttpResponseRedirect(reverse('DiscoverView_degree'))
+
 def DiscoverView_degree(request):
     """The first criterion of DSS. It asks user to choose which level of study fields is he looking for.
     Then it filters avielable study fields. This page uses django sessions to store information about the user
@@ -356,18 +411,7 @@ def DiscoverView_degree(request):
         is only required for first degree study fields
         DiscoverView_main: Page which allows to choose attributes.
     """
-    try:
-        del request.session['discover_progress']
-        del request.session['discover_try_attributes']
-        del request.session['approved_attributes']
-        del request.session['excluded_attributes']
-        del request.session['filtered_fields']
-    except KeyError:
-        pass
-    
-    request.session['discover_try_attributes'] = 5
-    request.session['discover_progress'] = 0
-    request.session['discover_max_pages'] = 4 + request.session['discover_try_attributes']
+    request.session['discover_progress'] += 1
     
     degrees = ['I Stopień', 'II Stopień']
     if request.method == 'GET':
