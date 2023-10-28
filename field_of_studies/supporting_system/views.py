@@ -518,13 +518,11 @@ def get_attributes_to_display(approved_attrs, excluded_attrs,filtered_fields):
     # prefered_attrs = list(dict.fromkeys(prefered_attrs))
     # other_attrs = list(Characteristics.objects.exclude(attribute__in=prefered_attrs).exclude(attribute__in=approved_attrs).exclude(attribute__in=excluded_attrs).order_by('?').values_list('attribute__id',flat=True))
     # other_attrs = list(dict.fromkeys(other_attrs))
-    
     fields_with_approved_attrs = Characteristics.objects.filter(attribute__in=approved_attrs, field_of_study__in=filtered_fields).values_list('field_of_study',flat=True)
-    prefered_attrs = Counter(Characteristics.objects.filter(field_of_study__in=fields_with_approved_attrs).exclude(attribute__in=excluded_attrs).exclude(attribute__in=approved_attrs).values_list('attribute__id',flat=True))
-    prefered_attrs = [key for key, value in sorted(prefered_attrs.items(), key=lambda item: item[1], reverse=True)]
+    prefered_attrs = Characteristics.objects.filter(field_of_study__in=fields_with_approved_attrs).exclude(attribute__in=approved_attrs).exclude(attribute__in=excluded_attrs).values_list('attribute__id',flat=True)
+    prefered_attrs_sorted = [str(key) for key, value in sorted(Counter(prefered_attrs).items(), key=lambda item: item[1], reverse=True)]
     other_attrs = list(Characteristics.objects.exclude(attribute__in=prefered_attrs).exclude(attribute__in=approved_attrs).exclude(attribute__in=excluded_attrs).order_by('?').values_list('attribute__id',flat=True))
     other_attrs = list(dict.fromkeys(other_attrs))
-    
     attrs_to_display = []
     proportion = 0.8
     len_of_attrs = 10
@@ -532,9 +530,9 @@ def get_attributes_to_display(approved_attrs, excluded_attrs,filtered_fields):
     added_prefered = 0
     for i in range(len_of_attrs):
         if added_prefered < int(len_of_attrs*proportion):
-            if len(prefered_attrs) > 0:
-                attrs_to_display.append(prefered_attrs[0])
-                prefered_attrs.pop(0)
+            if len(prefered_attrs_sorted) > 0:
+                attrs_to_display.append(prefered_attrs_sorted[0])
+                prefered_attrs_sorted.pop(0)
                 added_prefered += 1
             elif len(other_attrs) > 0:
                 attrs_to_display.append(other_attrs[0])
@@ -546,9 +544,9 @@ def get_attributes_to_display(approved_attrs, excluded_attrs,filtered_fields):
                 attrs_to_display.append(other_attrs[0])
                 other_attrs.pop(0)
                 added_other += 1
-            elif len(prefered_attrs) > 0:
-                attrs_to_display.append(prefered_attrs[0])
-                prefered_attrs.pop(0)
+            elif len(prefered_attrs_sorted) > 0:
+                attrs_to_display.append(prefered_attrs_sorted[0])
+                prefered_attrs_sorted.pop(0)
                 added_prefered += 1
     #print(f'{attrs_to_display} will be displayed with {added_prefered} prefered attrs and {added_other} other attrs.')
     return attrs_to_display
@@ -568,25 +566,33 @@ def DiscoverView(request):
         approved_attributes = request.POST.getlist('approved')
         excluded_attributes = request.POST.getlist('all')
         
+        
         # If both POST attributes are empty it meas that session should be initialized
         if approved_attributes == [] and excluded_attributes == []:
             #print('Clearing data')
             request.session['approved_attributes'] = []
             request.session['excluded_attributes'] = []
+            request.session.modified=True
         else:
             request.session['approved_attributes'].extend(approved_attributes)
+
             excluded_attributes = [x for x in excluded_attributes if x not in approved_attributes]
             request.session['excluded_attributes'].extend(excluded_attributes)
+
             request.session['discover_try_attributes'] -= 1
-            
             request.session.modified=True
         
-        
         request.session['discover_progress'] += 1
+
+        approved_attributes = request.session['approved_attributes']
+        excluded_attributes = request.session['excluded_attributes']
+        filtered_fields = request.session['filtered_fields']
         attrs_to_display = get_attributes_to_display(
-            request.session['approved_attributes'],request.session['excluded_attributes'], 
-            request.session['filtered_fields']
+            approved_attributes, excluded_attributes, filtered_fields
             )
+        print('=====State after getting new attributes=====')
+        print('New approved :', approved_attributes)
+        print('New excluded :', excluded_attributes)
         if request.session['discover_try_attributes'] > 0 and len(attrs_to_display) != 0:
             context = {
                 'attrs':Attributes.objects.filter(id__in=attrs_to_display).all(),
@@ -596,73 +602,6 @@ def DiscoverView(request):
         else:
             return HttpResponseRedirect(reverse('DiscoverView_results'))
 
-def calculate_characteristics_score(approved_attrs, excluded_attrs,filtered_fields):
-    """Function that calculates the score of given study field based on the attributes that were approved by user.
-    The score is a percentage of points that given subject got out of all that could be possible
-    to achieve (all which were displayed).
-
-    Args:
-        approved_attrs (list): Contains attributes approbed by the user
-        excluded_attrs (list): Contains attributes that were excluded by the user
-        filtered_fields (list): Contains study fields which should the attributes come from
-
-    Returns:
-        dict: Dictionary with study field id as key and score as value
-    """
-    results_of_fields = defaultdict(float)
-    characteristics = Characteristics.objects.filter(
-        field_of_study__in=filtered_fields, 
-        attribute__in=approved_attrs
-        ).all()
-    
-    #Calculating score for each field
-    for char in characteristics:
-        results_of_fields[char.field_of_study.id] += char.fit
-
-    #Other version of algorythm using percentage of sum of all characteristics)
-    shown_characteristics = approved_attrs
-    shown_characteristics.extend(excluded_attrs)
-    
-    # Converting the scores to percanges of shown items
-    for key, value in results_of_fields.items():
-        chars = list(Characteristics.objects.filter(field_of_study=key, attribute__id__in=approved_attrs).values_list('fit',flat=True))
-        results_of_fields[key] = round(value/sum(chars),2)
-    print(f'Characteristics results: {results_of_fields}')
-    return results_of_fields, shown_characteristics
-
-def calculate_city_score(cities,filtered_fields):
-    """Function that calculates the score of given study field based on the city where the university is located."""
-    results_of_fields = defaultdict(int)
-    study_fields = Field_of_Study.objects.filter(id__in=filtered_fields).all()
-    for field in filtered_fields:
-        if study_fields.get(id=field).university.city in cities:
-            results_of_fields[field] += 1
-        else:
-            results_of_fields[field] = 0
-    print(f'City results: {results_of_fields}')
-    return results_of_fields
-
-def calculate_uni_score(universities,filtered_fields):
-    """Function that calculates the score of given study field based on the university where the field is taught."""
-    results_of_fields = defaultdict(int)
-    study_fields = Field_of_Study.objects.filter(id__in=filtered_fields).all()
-    for field in filtered_fields:
-        if study_fields.get(id=field).university in universities:
-            results_of_fields[field] += 1
-        else:
-            results_of_fields[field] = 0
-    print(f'Uni results: {results_of_fields}')
-    return results_of_fields
-
-def calculate_uni_rank_score(filtered_fields):
-    """Function that calculates the score of given study field based on the rank of university where the field is taught."""
-    results_of_fields = defaultdict(int)
-    study_fields = Field_of_Study.objects.filter(id__in=filtered_fields).all()
-    for field in filtered_fields:
-        results_of_fields[field] = round(1/study_fields.get(id=field).university.rank_overall,2)
-    print(f'Uni rank results: {results_of_fields}')
-    return results_of_fields
-
 def DiscoverResultsView(request):
     """Result view for a DSS. It calculates the individual fit score for each study field.
     The score is a percentage of points that given subject got out of all th
@@ -671,42 +610,84 @@ def DiscoverResultsView(request):
     """
     
     results_of_fields = defaultdict(float)
-    characteristics_results, shown_characteristics = calculate_characteristics_score(request.session['approved_attributes'],request.session['excluded_attributes'],request.session['filtered_fields'])
-    cities_results = calculate_city_score(request.session['cities'],request.session['filtered_fields'])
-    uni_results = calculate_uni_score(request.session['university'],request.session['filtered_fields'])
-    uni_rank_result = calculate_uni_rank_score(request.session['filtered_fields'])
-
-    city_score, uni_score, uni_rank_score, characteristics_score = request.session['criteria']['city'], request.session['criteria']['uni'], request.session['criteria']['uni_rank'], request.session['criteria']['characteristics']
+    city_score, uni_score, uni_rank_score, characteristics_score = request.session['criteria']['city'], request.session['criteria']['uni'], request.session['criteria']['uni_rank'], 2*request.session['criteria']['characteristics']
     best_score = city_score + uni_score + uni_rank_score + characteristics_score
-
+    if characteristics_score != 0:
+        shown_characteristics = []
+        shown_characteristics = list(request.session['approved_attributes'])
+        shown_characteristics.extend(list(request.session['excluded_attributes']))
     # Calculating final score for each field
     for field in request.session['filtered_fields']:
-        results_of_fields[field] = (city_score*cities_results[field] + uni_score*uni_results[field] + uni_rank_score*uni_rank_result[field] + characteristics_score*characteristics_results[field])/best_score*100
+        characteristics_result = 0
+        cities_result = 0
+        uni_result = 0
+        uni_rank_result = 0
+        if characteristics_score != 0:
+            approved_characteristics_of_field = Characteristics.objects.filter(field_of_study=field, attribute__id__in=request.session['approved_attributes']).values_list('fit',flat=True)
+            shown_characteristics_of_field = Characteristics.objects.filter(field_of_study=field, attribute__id__in=shown_characteristics).values_list('fit',flat=True)
+            characteristics_result = round(sum(approved_characteristics_of_field)/sum(shown_characteristics_of_field),2)
+        if city_score != 0:
+            if Field_of_Study.objects.get(id=field).university.city in request.session['cities']:
+                cities_result = 1
+        
+        if uni_score != 0:
+            if Field_of_Study.objects.get(id=field).university in request.session['university']:
+                uni_result = 1
 
-    results_of_fields = dict(sorted(results_of_fields.items(), key=lambda x: x[1],reverse=True))
+        if uni_rank_score != 0:
+            uni_rank_result = round(1/Field_of_Study.objects.get(id=field).university.rank_overall,2)
+
+        result = (city_score*cities_result + uni_score*uni_result + uni_rank_score*uni_rank_result + characteristics_score*characteristics_result)/best_score*100
+        results_of_fields[field] = {
+            'result':round(result,2),
+            'characteristics':characteristics_result,
+            'city':cities_result,
+            'uni':uni_result,
+            'uni_rank':uni_rank_result,
+        }
+        #print(f'{field} got {result} points, {city_score*cities_result} from city, {uni_score*uni_result} from uni, {uni_rank_score*uni_rank_result} from uni rank and {characteristics_score*characteristics_result} from characteristics')
+
+    results_of_fields = dict(sorted(results_of_fields.items(), key=lambda item: item[1]['result'], reverse=True))
     results_top3 = []
     results_rest = []
     for key, value in results_of_fields.items():
         temp_data_to_display = {
             'field':Field_of_Study.objects.get(id=key),
-            'result':round(value,2),
-            'characteristics':[
+            'result':value['result'],
+        }
+        if characteristics_score != 0:
+            temp_data_to_display['characteristics'] = [
                 Characteristics.objects.filter(field_of_study=key, attribute__id__in=shown_characteristics).count(),
                 Characteristics.objects.filter(field_of_study=key).count(),
-                characteristics_score
-                ],
-            'city':[
-                cities_results[key],
-                city_score
-                ],
-            'uni':[
-                uni_results[key],
-                uni_score
-                ],
-            'uni_rank':[
-                uni_rank_score
-                ],
-        }
+                value['characteristics']
+                ]
+        else:
+            temp_data_to_display['characteristics'] = None
+
+        if city_score != 0:
+            temp_data_to_display['city'] = [
+                value['city'],
+                Field_of_Study.objects.get(id=key).university.city
+                ]
+        else:
+            temp_data_to_display['city'] = None
+
+        if uni_score != 0:
+            temp_data_to_display['uni'] = [
+                value['uni'],
+                Field_of_Study.objects.get(id=key).university.name
+                ]
+        else:
+            temp_data_to_display['uni'] = None
+
+        if uni_rank_score != 0:
+            temp_data_to_display['uni_rank'] = [
+                value['uni_rank'],
+                Field_of_Study.objects.get(id=key).university.rank_overall
+                ]
+        else:
+            temp_data_to_display['uni_rank'] = None
+
         if len(results_top3) < 3:
             results_top3.append(temp_data_to_display)
         elif len(results_rest) < 10:
