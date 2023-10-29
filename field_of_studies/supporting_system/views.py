@@ -627,11 +627,11 @@ def DiscoverResultsView(request):
             shown_characteristics_of_field = Characteristics.objects.filter(field_of_study=field, attribute__id__in=shown_characteristics).values_list('fit',flat=True)
             characteristics_result = round(sum(approved_characteristics_of_field)/sum(shown_characteristics_of_field),2)
         if city_score != 0:
-            if Field_of_Study.objects.get(id=field).university.city in request.session['cities']:
+            if str(Field_of_Study.objects.get(id=field).university.city) in request.session['cities']:
                 cities_result = 1
         
         if uni_score != 0:
-            if Field_of_Study.objects.get(id=field).university in request.session['university']:
+            if str(Field_of_Study.objects.get(id=field).university.id) in request.session['university']:
                 uni_result = 1
 
         if uni_rank_score != 0:
@@ -657,9 +657,10 @@ def DiscoverResultsView(request):
         }
         if characteristics_score != 0:
             temp_data_to_display['characteristics'] = [
+                Characteristics.objects.filter(field_of_study=key, attribute__id__in=request.session['approved_attributes']).count(),
                 Characteristics.objects.filter(field_of_study=key, attribute__id__in=shown_characteristics).count(),
                 Characteristics.objects.filter(field_of_study=key).count(),
-                value['characteristics']
+                True if Characteristics.objects.filter(field_of_study=key, attribute__id__in=request.session['approved_attributes']).count()/Characteristics.objects.filter(field_of_study=key, attribute__id__in=shown_characteristics).count() > 0.5 else False
                 ]
         else:
             temp_data_to_display['characteristics'] = None

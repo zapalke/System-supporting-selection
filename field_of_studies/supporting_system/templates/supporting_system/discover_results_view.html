@@ -87,17 +87,65 @@
             <div class="row p-1">
                 <div class="col-md-6 mb-3">
                     <div class="border border-1 border-secondary bg-white p-2 rounded">
-                        <p class='fw-light'>{{value.field.description}}</p>
+                        <h5>Opis kierunku:</h5>
+                        <p class='fw-lighter'>{{value.field.description}}</p>
                     </div>
                 </div>
                 <div class="col-md-6 mb-3">
                     <div class="border border-1 border-warning bg-white p-2 rounded">
-                        <h5>Ocena została wyliczona na podstawie</h5>
-                            <ul>
-                                <li>
-                                    {{value.characteristics.0}} wyświetlonych tematyk z {{value.characteristics.1}} przypisanych do kierunku.
-                                </li>
-                            </ul>
+                        <h5>Składowe oceny:</h5>
+                        <ul class="fa-ul">
+                            {% if value.characteristics != None %}
+                                {% if value.characteristics.3 %}
+                                    <li class="text-success"><span class="fa-li"><i class="fa-solid fa-list-check"></i></span> 
+                                        {{value.characteristics.0}} na {{value.characteristics.1}} dopasowanych tematyk ze wszystkich {{value.characteristics.2}} przypisanych do kierunku.
+                                    </li>
+                                {% else %}
+                                    <li class="text-danger"><span class="fa-li"><i class="fa-solid fa-list-check"></i></span> 
+                                        {{value.characteristics.0}} na {{value.characteristics.1}} dopasowanych tematyk ze wszystkich {{value.characteristics.2}} przypisanych do kierunku.
+                                    </li>
+                                {% endif %}
+                            {% endif %}
+                            {% if value.city != None %}
+                                {% if value.city.0 != 0 %}
+                                    <li class="text-success">
+                                        <span class="fa-li text-success-emphasis"><i class="fa-solid fa-thumbs-up"></i></span>
+                                        {{value.city.1}} jest wsród preferowanych miast studiowania.
+                                    </li>
+                                {% else %}
+                                    <li class="text-danger">                                                        
+                                        <span class="fa-li"><i class="fa-solid fa-thumbs-down"></i></span>
+                                        {{value.city.1}} nie jest wsród preferowanych miast studiowania.
+                                    </li>
+                                {% endif %}
+                            {% endif %}
+                            {% if value.uni != None %}
+                                {% if value.uni.0 != 0 %}
+                                    <li class="text-success">
+                                        <span class="fa-li "><i class="fa-solid fa-thumbs-up"></i></span>
+                                        {{value.uni.1}} jest wsród preferowanych uczelni.
+                                    </li>
+                                {% else %}
+                                    <li class="text-danger">
+                                        <span class="fa-li"><i class="fa-solid fa-thumbs-down"></i></span>
+                                        {{value.uni.1}} nie jest wsród preferowanych uczelni.
+                                    </li>
+                                {% endif %}
+                            {% endif %}
+                            {% if value.uni_rank != None %}
+                                    {% if value.uni_rank.1 <= 10 %}
+                                        <li class="text-success">
+                                            <span class="fa-li"><i class="fa-solid fa-ranking-star"></i></span>
+                                            Uczelnia zajmuje {{value.uni_rank.1}} miejsce w ogólnym rankingu uczelni.
+                                        </li>
+                                    {% else %}
+                                        <li class="text-danger">
+                                            <span class="fa-li"><i class="fa-solid fa-ranking-star"></i></span>
+                                            Uczelnia zajmuje {{value.uni_rank.1}} miejsce w ogólnym rankingu uczelni.
+                                        </li>
+                                    {% endif %}
+                            {% endif %}
+                        </ul>
                     </div>
                 </div> 
             </div> 
@@ -190,11 +238,58 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <div class="border border-1 border-warning bg-white p-2 rounded">
-                                    <h5>Ocena została wyliczona na podstawie</h5>
-                                        <ul>
-                                            <li>
-                                                {{value.characteristics.0}} wyświetlonych tematyk z {{value.characteristics.1}} przypisanych do kierunku.
-                                            </li>
+                                    <h5>Składowe oceny</h5>
+                                        <ul class="fa-ul">
+                                            {% if value.characteristics != None %}
+                                                {% if value.characteristics.3 %}
+                                                    <li class="text-success"><span class="fa-li"><i class="fa-solid fa-list-check"></i></span> 
+                                                        {{value.characteristics.0}} na {{value.characteristics.1}} dopasowanych tematyk ze wszystkich {{value.characteristics.2}} przypisanych do kierunku.
+                                                    </li>
+                                                {% else %}
+                                                    <li class="text-danger"><span class="fa-li"><i class="fa-solid fa-list-check"></i></span> 
+                                                        {{value.characteristics.0}} na {{value.characteristics.1}} dopasowanych tematyk ze wszystkich {{value.characteristics.2}} przypisanych do kierunku.
+                                                    </li>
+                                                {% endif %}
+                                            {% endif %}
+                                            {% if value.city != None %}
+                                                {% if value.city.0 != 0 %}
+                                                    <li class="text-success">
+                                                        <span class="fa-li text-success-emphasis"><i class="fa-solid fa-thumbs-up"></i></span>
+                                                        {{value.city.1}} jest wsród preferowanych miast studiowania.
+                                                    </li>
+                                                {% else %}
+                                                    <li class="text-danger">                                                        
+                                                        <span class="fa-li"><i class="fa-solid fa-thumbs-down"></i></span>
+                                                        {{value.city.1}} nie jest wsród preferowanych miast studiowania.
+                                                    </li>
+                                                {% endif %}
+                                            {% endif %}
+                                            {% if value.uni != None %}
+                                                {% if value.uni.0 != 0 %}
+                                                    <li class="text-success">
+                                                        <span class="fa-li "><i class="fa-solid fa-thumbs-up"></i></span>
+                                                        {{value.uni.1}} jest wsród preferowanych uczelni.
+                                                    </li>
+                                                {% else %}
+                                                    <li class="text-danger">
+                                                        <span class="fa-li"><i class="fa-solid fa-thumbs-down"></i></span>
+                                                        {{value.uni.1}} nie jest wsród preferowanych uczelni.
+                                                    </li>
+                                                {% endif %}
+                                            {% endif %}
+                                            {% if value.uni_rank != None %}
+                                                    {% if value.uni_rank.1 <= 10 %}
+                                                        <li class="text-success">
+                                                            <span class="fa-li"><i class="fa-solid fa-ranking-star"></i></span>
+                                                            Uczelnia zajmuje {{value.uni_rank.1}} miejsce w ogólnym rankingu uczelni.
+                                                        </li>
+                                                    {% else %}
+                                                        <li class="text-danger">
+                                                            <span class="fa-li"><i class="fa-solid fa-ranking-star"></i></span>
+                                                            Uczelnia zajmuje {{value.uni_rank.1}} miejsce w ogólnym rankingu uczelni.
+                                                        </li>
+                                                    {% endif %}
+                                            {% endif %}
                                         </ul>
                                 </div>
                             </div> 
