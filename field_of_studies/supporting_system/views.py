@@ -593,9 +593,6 @@ def DiscoverView(request):
         attrs_to_display = get_attributes_to_display(
             approved_attributes, excluded_attributes, filtered_fields
             )
-        print('=====State after getting new attributes=====')
-        print('New approved :', approved_attributes)
-        print('New excluded :', excluded_attributes)
         if request.session['discover_try_attributes'] > 0 and len(attrs_to_display) != 0:
             context = {
                 'attrs':Attributes.objects.filter(id__in=attrs_to_display).all(),
