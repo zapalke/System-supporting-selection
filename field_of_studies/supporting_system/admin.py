@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (Field_of_Study, University, Subjects, Exam_Subjects, Alternative_Exam_Subjects,
-                    Attributes, Characteristics)
+                    Attributes, Characteristics, RoomPrice)
 
 
 class Field_of_StudyAdmin(admin.ModelAdmin):
@@ -24,6 +24,8 @@ class AttributesAdmin(admin.ModelAdmin):
 class CharacteristicsAdmin(admin.ModelAdmin):
     list_display = [column.name for column in Characteristics._meta.fields]
 
+class Room_PricesAdmin(admin.ModelAdmin):
+    list_display = [column.name for column in RoomPrice._meta.fields]
 
 admin.site.register(Field_of_Study, Field_of_StudyAdmin)
 admin.site.register(University,UniversityAdmin)
@@ -32,3 +34,4 @@ admin.site.register(Exam_Subjects,Exam_SubjectsAdmin)
 admin.site.register(Alternative_Exam_Subjects,Alternative_Exam_SubjectsAdmin)
 admin.site.register(Attributes,AttributesAdmin)
 admin.site.register(Characteristics, CharacteristicsAdmin)
+admin.site.register(RoomPrice, Room_PricesAdmin)

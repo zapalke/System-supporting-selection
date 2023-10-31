@@ -36,8 +36,27 @@
     </form>
 </div>
 
+<script>
+    // Set the progress variable from the Django template
+    var progress = {{ progress }};
 
-
-
-    
+    $(document).ready(function () {
+        $('#submitButton').click(function () {
+            if (progress === 100) {
+                // Load the loading_popup.html content using an AJAX request
+                var xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        // Insert the content into the loadingPopupContent div
+                        document.getElementById("loadingPopupContent").innerHTML = this.responseText;
+                        // Show the modal
+                        $('#loadingModal').modal('show');
+                    }
+                };
+                xhttp.open("GET", "discover_loading_page.html", true);
+                xhttp.send();
+            }
+        });
+    });
+</script>
 {% endblock %}

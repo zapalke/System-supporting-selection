@@ -119,6 +119,19 @@
                                     </li>
                                 {% endif %}
                             {% endif %}
+                            {% if value.living_expenses != None %}
+                                    {% if value.living_expenses.1 <= 1000 %}
+                                    <li class="text-success">
+                                        <span class="fa-li"><i class="fa-solid fa-money-bill"></i></span>
+                                        Średni miesięczny koszt wynajęcia pokoju w mieście wynosi {{value.living_expenses.1}} zł.
+                                    </li>
+                                    {% else %}
+                                    <li class="text-danger">
+                                        <span class="fa-li"><i class="fa-solid fa-money-bill"></i></span>
+                                        Średni miesięczny koszt wynajęcia pokoju w mieście wynosi {{value.living_expenses.1}} zł.
+                                    </li>
+                                    {% endif %}
+                            {% endif %}
                             {% if value.uni != None %}
                                 {% if value.uni.0 != 0 %}
                                     <li class="text-success">
@@ -262,6 +275,19 @@
                                                         <span class="fa-li"><i class="fa-solid fa-thumbs-down"></i></span>
                                                         {{value.city.1}} nie jest wsród preferowanych miast studiowania.
                                                     </li>
+                                                {% endif %}
+                                            {% endif %}
+                                            {% if value.living_expenses != None %}
+                                                {% if value.living_expenses.1 <= 1000 %}
+                                                <li class="text-success">
+                                                    <span class="fa-li"><i class="fa-solid fa-money-bill"></i></span>
+                                                    Średni miesięczny koszt wynajęcia pokoju w mieście wynosi {{value.living_expenses.1}} zł.
+                                                </li>
+                                                {% else %}
+                                                <li class="text-danger">
+                                                    <span class="fa-li"><i class="fa-solid fa-money-bill"></i></span>
+                                                    Średni miesięczny koszt wynajęcia pokoju w mieście wynosi {{value.living_expenses.1}} zł.
+                                                </li>
                                                 {% endif %}
                                             {% endif %}
                                             {% if value.uni != None %}

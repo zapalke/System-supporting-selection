@@ -8,7 +8,8 @@ from django.urls import reverse
 from .forms import ( AddFieldForm, ExamSubjectForm, FieldFilterForm,
                     AlternativeExamSubjectForm, CharacteristicsForm)
 from .models import (Field_of_Study, University, Subjects,Exam_Subjects, 
-                     Alternative_Exam_Subjects, Attributes, Characteristics)
+                     Alternative_Exam_Subjects, Attributes, Characteristics,
+                     RoomPrice)
 from collections import defaultdict, Counter
 
 
@@ -366,11 +367,11 @@ def DiscoverView_criteria(request):
             pass
         criteria = {
                     'city':'Miasto studiowania','uni':'Uniwersytet','uni_rank':'Ranking uczelni',
-                    'characteristics':'Lubiane tematyki'
+                    'characteristics':'Lubiane tematyki', 'living_expenses':'Koszty utrzymania'
             }
         request.session['discover_try_attributes'] = 5
         request.session['discover_progress'] = 0
-        request.session['discover_max_pages'] = 3 + len(criteria) + request.session['discover_try_attributes']
+        request.session['discover_max_pages'] = 5 + request.session['discover_try_attributes']
 
         context = {
             'criteria': criteria,
@@ -378,6 +379,7 @@ def DiscoverView_criteria(request):
         }
         return render(request, 'supporting_system/discover_criteria_view.html', context)
     else:
+        city_score, uni_score, uni_rank_score, characteristics_score, living_expenses_score = 0,0,0,0,0
         if request.POST.get('city'):
              city_score = int(request.POST.get('city'))
              if city_score == 0:
@@ -388,15 +390,16 @@ def DiscoverView_criteria(request):
                  request.session['discover_max_pages'] -= 1
         if request.POST.get('uni_rank'):
             uni_rank_score = int(request.POST.get('uni_rank'))
-            if uni_rank_score == 0:
-                 request.session['discover_max_pages'] -= 1
         if request.POST.get('characteristics'):
             characteristics_score = int(request.POST.get('characteristics'))
             if characteristics_score == 0:
                  request.session['discover_max_pages'] -= request.session['discover_try_attributes']
+        if request.POST.get('living_expenses'):
+            living_expenses_score = int(request.POST.get('living_expenses'))
 
         request.session['criteria'] = {
-            'city':city_score,'uni':uni_score,'uni_rank':uni_rank_score,'characteristics':characteristics_score
+            'city':city_score,'uni':uni_score,'uni_rank':uni_rank_score,'characteristics':characteristics_score,
+            'living_expenses':living_expenses_score
         }
         print(request.session)
         return HttpResponseRedirect(reverse('DiscoverView_degree'))
@@ -610,8 +613,12 @@ def DiscoverResultsView(request):
     """
     
     results_of_fields = defaultdict(float)
-    city_score, uni_score, uni_rank_score, characteristics_score = request.session['criteria']['city'], request.session['criteria']['uni'], request.session['criteria']['uni_rank'], 2*request.session['criteria']['characteristics']
-    best_score = city_score + uni_score + uni_rank_score + characteristics_score
+    city_score = request.session['criteria']['city']
+    uni_score = request.session['criteria']['uni']
+    uni_rank_score = request.session['criteria']['uni_rank']
+    characteristics_score = 2*request.session['criteria']['characteristics']
+    living_expenses_score = request.session['criteria']['living_expenses']
+    best_score = city_score + uni_score + uni_rank_score + characteristics_score + living_expenses_score
     if characteristics_score != 0:
         shown_characteristics = []
         shown_characteristics = list(request.session['approved_attributes'])
@@ -622,6 +629,7 @@ def DiscoverResultsView(request):
         cities_result = 0
         uni_result = 0
         uni_rank_result = 0
+        living_expenses_result = 0
         if characteristics_score != 0:
             approved_characteristics_of_field = Characteristics.objects.filter(field_of_study=field, attribute__id__in=request.session['approved_attributes']).values_list('fit',flat=True)
             shown_characteristics_of_field = Characteristics.objects.filter(field_of_study=field, attribute__id__in=shown_characteristics).values_list('fit',flat=True)
@@ -636,14 +644,20 @@ def DiscoverResultsView(request):
 
         if uni_rank_score != 0:
             uni_rank_result = round(1/Field_of_Study.objects.get(id=field).university.rank_overall,2)
+        
+        if living_expenses_score != 0:
+            uni = Field_of_Study.objects.get(id=field).university
+            avg_room_price = RoomPrice.objects.get(city=uni).avg_room_price/RoomPrice.objects.order_by('avg_room_price').first().avg_room_price
+            living_expenses_result = round(1/avg_room_price,2)
 
-        result = (city_score*cities_result + uni_score*uni_result + uni_rank_score*uni_rank_result + characteristics_score*characteristics_result)/best_score*100
+        result = (city_score*cities_result + uni_score*uni_result + uni_rank_score*uni_rank_result + characteristics_score*characteristics_result + living_expenses_score*living_expenses_result)/best_score*100
         results_of_fields[field] = {
             'result':round(result,2),
             'characteristics':characteristics_result,
             'city':cities_result,
             'uni':uni_result,
             'uni_rank':uni_rank_result,
+            'living_expenses':living_expenses_result,
         }
         #print(f'{field} got {result} points, {city_score*cities_result} from city, {uni_score*uni_result} from uni, {uni_rank_score*uni_rank_result} from uni rank and {characteristics_score*characteristics_result} from characteristics')
 
@@ -688,6 +702,14 @@ def DiscoverResultsView(request):
                 ]
         else:
             temp_data_to_display['uni_rank'] = None
+        
+        if living_expenses_score != 0:
+            temp_data_to_display['living_expenses'] = [
+                value['living_expenses'],
+                RoomPrice.objects.get(city=Field_of_Study.objects.get(id=key).university).avg_room_price
+                ]
+        else:
+            temp_data_to_display['living_expenses'] = None
 
         if len(results_top3) < 3:
             results_top3.append(temp_data_to_display)

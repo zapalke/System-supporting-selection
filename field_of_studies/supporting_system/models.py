@@ -56,6 +56,20 @@ class University(models.Model):
     def __str__(self):
         return f'{self.name}'   
 
+class RoomPrice(models.Model):
+    city = models.ForeignKey('University', on_delete=models.CASCADE, to_field='id')
+    avg_room_price = models.IntegerField(default=0, validators=[MinValueValidator(0)])
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name_plural = 'Room Prices'
+
+    def __str__(self):
+        return f'{self.city}'       
+    
+
 class Subjects(models.Model):
     subject = models.CharField(max_length=80, default='Nieznany Przedmiot')
 
