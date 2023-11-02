@@ -1,20 +1,6 @@
-{% extends "base.html" %}
-{% load tags %}
-{% block content %}
+{% extends "discover_base.html" %}
+{% block discover %}
 
-<div class="jumbotron">
-    <h2 class="display-4">Znajdź kierunek studiów</h2>
-    <p class="lead">System pomoże wybrać ci najbardziej dopasowany kierunek studiów. 
-        <ul>
-            <li class="lead">Najpierw zostaniesz poproszony o wybranie stopnia studiów.</li> 
-            <li class="lead">Potem w przypadku szukania studiów I stopnia będziesz mógł uzupełnić które przedmioty zdawałeś na maturze. </li>
-            <li class="lead">Finalnie zostanie ci kilkukrotnie wyświetlone 10 różnych tematyk które możesz zaznaczyć jeżeli ci się podobają. Na ich podstawie otrzymasz kilka najbardziej dopasowanych kierunków studiów</li> 
-        </ul>
-    </p>
-    <hr class="my-4">
-</div>
-
-<div class="container my-3">
     <form method="post">
         {% csrf_token %}
         <div class="container mx-auto p-3 bg-white rounded border" style="max-width: 650px;">
@@ -33,10 +19,5 @@
             <button type="submit" class="btn btn-primary btn-lg d-block mx-auto w-75 my-1">Zapisz i przejdź dalej</button> 
         </div>
     </form>
-</div>
 
-
-
-
-    
 {% endblock %}

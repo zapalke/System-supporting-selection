@@ -429,6 +429,7 @@ def DiscoverView_degree(request):
             return HttpResponseRedirect(reverse('DiscoverView_subjects'))
         else:
             request.session['filtered_fields'] = list(Field_of_Study.objects.filter(degree='Magister').values_list('id',flat=True))
+            request.session['discover_max_pages'] -= 1
             return HttpResponseRedirect(reverse('DiscoverView_cities'))
         
     
@@ -477,7 +478,6 @@ def DiscoverView_cities(request):
     else:
         if request.POST.getlist('cities'):
             request.session['cities'] = request.POST.getlist('cities')
-        print(request.session['cities'])
         return HttpResponseRedirect(reverse('DiscoverView_uni'))
     
 def DiscoverView_uni(request):
@@ -501,7 +501,6 @@ def DiscoverView_uni(request):
     else:
         if request.POST.getlist('university'):
             request.session['university'] = request.POST.getlist('university')
-        print(request.session['university'])
         return HttpResponseRedirect(reverse('DiscoverView_main'))
 
 def get_attributes_to_display(approved_attrs, excluded_attrs,filtered_fields):

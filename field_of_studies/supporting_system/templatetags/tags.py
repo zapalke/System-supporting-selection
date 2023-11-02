@@ -1,5 +1,9 @@
 from django import template
-from ..models import Field_of_Study,University, Exam_Subjects, Characteristics, Alternative_Exam_Subjects
+from ..models import (
+    Field_of_Study,University, Exam_Subjects, Characteristics, 
+    Alternative_Exam_Subjects, RoomPrice
+)
+from django.db.models import Avg
 
 register = template.Library()
 
@@ -85,3 +89,11 @@ def return_number_of_field(degree):
 @register.simple_tag(name='return_number_of_uni')
 def return_number_of_uni():
     return University.objects.count()
+
+@register.filter(name='living_expenses_below_avg')
+def living_expenses_below_avg(living_expenses):
+    avg_living_expenses = int(RoomPrice.objects.all().aggregate(Avg('avg_room_price'))['avg_room_price__avg'])
+    if living_expenses <= avg_living_expenses:
+        return True
+    else:
+        return False

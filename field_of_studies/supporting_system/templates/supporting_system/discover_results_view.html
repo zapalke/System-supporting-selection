@@ -120,7 +120,7 @@
                                 {% endif %}
                             {% endif %}
                             {% if value.living_expenses != None %}
-                                    {% if value.living_expenses.1 <= 1000 %}
+                                    {% if value.living_expenses.1|living_expenses_below_avg %}
                                     <li class="text-success">
                                         <span class="fa-li"><i class="fa-solid fa-money-bill"></i></span>
                                         Średni miesięczny koszt wynajęcia pokoju w mieście wynosi {{value.living_expenses.1}} zł.

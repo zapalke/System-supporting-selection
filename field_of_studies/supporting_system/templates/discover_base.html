@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load tags %}
+{% block content %}
+
+<div class="jumbotron">
+    <h2 class="display-4">Znajdź kierunek studiów</h2>
+    <p class="lead">System pomoże wybrać ci najbardziej dopasowany kierunek studiów. 
+        <ul>
+            <li class="lead">Najpierw zostaniesz poproszony o wybranie stopnia studiów.</li> 
+            <li class="lead">Potem w przypadku szukania studiów I stopnia będziesz mógł uzupełnić które przedmioty zdawałeś na maturze. </li>
+            <li class="lead">Finalnie zostanie ci kilkukrotnie wyświetlone 10 różnych tematyk które możesz zaznaczyć jeżeli ci się podobają. Na ich podstawie otrzymasz kilka najbardziej dopasowanych kierunków studiów</li> 
+        </ul>
+    </p>
+    <hr class="my-4">
+</div>
+
+<div class="modal" id="loadingModal" tabindex="-1" role="dialog" style="display: none;">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-body text-center border border-3 border-primary">
+            <div class="spinner-border text-primary" style="width: 5rem; height: 5rem;" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="display-5">Dopasowywanie najlepszego kierunku studiów dla ciebie.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+<div class="container my-3">
+    {% block discover %}
+    {% endblock %}
+    <input type="hidden" name="progress" value="{{ progress }}">
+
+<script>
+    function validateForm() {
+        var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        var checked = false;
+
+        for (var i = 0; i < checkboxes.length; i++) {
+            if (checkboxes[i].checked) {
+                checked = true;
+                break;
+            }
+        }
+
+        if (!checked) {
+            alert("Proszę wybierz przynajmniej 1 opcję.");
+            return false;
+        }
+    }
+</script>
+
+<script>
+    function validateRadioForm() {
+        var criteria = {{ criteria|safe }};
+        var valid = false;
+        for (var key in criteria) {
+            var rating = parseInt(document.querySelector('input[name="' + key + '"]:checked').value);
+            if (!isNaN(rating) && rating > 0) {
+                valid = true;
+                break;
+            }
+        }
+        if (!valid) {
+            alert("Oceń przynajmniej jedno kryterium na więcej niż 0");
+            return false;
+        }
+        return true;
+    }
+</script>
+    
+<script>
+    $(document).ready(function() {
+        // Listen for the form submission event
+        $('form').on('submit', function(e) {
+            var progress = parseInt($('input[name="progress"]').val());
+
+            if (progress === 100) {
+                // Show the modal
+                $('#loadingModal').modal('show');
+            }
+        });
+    });
+</script>
+
+
+{% endblock %}
