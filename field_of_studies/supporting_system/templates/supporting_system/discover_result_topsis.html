@@ -1,225 +1,204 @@
-{% extends "base.html" %}
 {% load tags %}
-{% block content %}
-
-<div class="jumbotron">
-    <h2 class="display-4">Znajdź kierunek studiów</h2>
-    <p class="lead">Poniżej znajdują się rezultaty przeprowadzonej przez system analizy. </p>
-    <hr class="my-4">
-    <h3>Najbardziej dopasowane kierunki</h3>
-</div>
-<div class="row g-2 py-4 row-cols-3 row-cols-lg-1">
-    {% for value in results_top3 %}
-    <div class="feature col">
-        <div class="feature-icon bg-primary bg-gradient">
-            <svg class="bi" width="1em" height="1em"><use xlink:href="#collection"></use></svg>
-        </div>
-        <div class="row align-items-center"> <!-- Use align-items-center class here -->
-            <div class="col-1">
-                <i class="fa-solid fa-{{ forloop.counter }} fa-5x"></i>
-            </div>
-            <div class="col pl-0">
-                <h2>{{ value.field.name }}</h2>
-                <h4>{{ value.field.university }}</h4>
-            </div>
-            <div class="col-4 align-self-lg-auto border border-3 border-success rounded bg-white" style="margin-top: 5px;">
-                <h4 class="text-center py-1 mb-0">Dopasowanie: {{ value.result }}%</h4>
-            </div>
-            
-            <div class="col-1"></div>
-        </div>
+    {% for value in topsis_results_top3 %}
+<div class="feature col">
+    <div class="feature-icon bg-primary bg-gradient">
+        <svg class="bi" width="1em" height="1em"><use xlink:href="#collection"></use></svg>
     </div>
-        <div class="container border border-info border-1 rounded p-3">
-            <div class="row p-1">
-                <div class="col-md-6 mb-3">
-                    <div class="border border-primary bg-white rounded p-2">
-                        <h5 class="mb-3">Informacje o kierunku:</h5>
-                        <div class="row">
-                            <div class="col-4">
-                                <h6>Typ studiów:</h6>
-                            </div>
-                            <div class="col text-left">
-                                {{value.field.degree}} | {{ value.field.study_mode }}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-4">
-                                <h6>Miasto studiowania:</h6>
-                            </div>
-                            <div class="col text-left">
-                                {{ value.field.id|return_city_of_given_field }}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-4">
-                                <h6>Ranking uczelni:</h6>
-                            </div>
-                            <div class="col text-left">
-                                <div class="mb-2">
-                                    Ogólnie: {{ value.field.id|return_ranking_overall_of_given_uni }}
-                                </div>
-                                <div>
-                                    W kategorii: {{ value.field.id|return_ranking_in_type_of_given_uni }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <div class="border border-1 border-primary bg-white p-2 rounded">
-                        <h5>Przedmioty wymagane do rekrutacji:</h5>
-                        {% if value.field.id|return_subjects_with_alternatives_of_given_field == None %}
-                            {% if value.field.degree == 'Magister' %}
-                                Do rekrutacji wymagana jest ocena z egzaminu dyplomowego.
-                            {% else %}
-                                Do rekrutacji można się zgłosić z dowolnym przedmiotem.
-                            {% endif %}
-                        {% else %}
-                            <ul>
-                                {% for subject in value.field.id|return_subjects_with_alternatives_of_given_field %}
-                                    <li>{{subject}} </li>
-                                {% endfor %}
-                            </ul>
-                        {% endif %} 
-                    </div>    
-                </div>    
-            </div>
-            <div class="row p-1">
-                <div class="col-md-6 mb-3">
-                    <div class="border border-1 border-secondary bg-white p-2 rounded">
-                        <h5>Opis kierunku:</h5>
-                        <p class='fw-lighter'>{{value.field.description}}</p>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <div class="border border-1 border-warning bg-white p-2 rounded">
-                        <h5>Składowe oceny:</h5>
-                        <ul class="fa-ul">
-                            {% if value.characteristics != None %}
-                                {% if value.characteristics.3 %}
-                                    <li class="text-success"><span class="fa-li"><i class="fa-solid fa-list-check"></i></span> 
-                                        <div class="row">
-                                            <div class="col-2">{{value.characteristics.4}}%</div>
-                                            <div class="col-10">
-                                                {{value.characteristics.0}} na {{value.characteristics.1}} dopasowanych tematyk ze wszystkich {{value.characteristics.2}} przypisanych do kierunku.
-                                            </div>
-                                        </div>
-                                    </li>
-                                {% else %}
-                                    <li class="text-danger"><span class="fa-li"><i class="fa-solid fa-list-check"></i></span> 
-                                        <div class="row">
-                                            <div class="col-2">{{value.characteristics.4}}%</div>
-                                            <div class="col-10">
-                                                {{value.characteristics.0}} na {{value.characteristics.1}} dopasowanych tematyk ze wszystkich {{value.characteristics.2}} przypisanych do kierunku.
-                                            </div>
-                                        </div>
-                                    </li>
-                                {% endif %}
-                            {% endif %}
-                            {% if value.city != None %}
-                                {% if value.city.0 != 0 %}
-                                    <li class="text-success">
-                                        <span class="fa-li text-success-emphasis"><i class="fa-solid fa-thumbs-up"></i></span>
-                                        <div class="row">
-                                            <div class="col-2">{{value.city.2}}%</div>
-                                            <div class="col-10">
-                                                {{value.city.1}} jest wsród preferowanych miast studiowania.
-                                            </div>
-                                        </div>
-                                    </li>
-                                {% else %}
-                                    <li class="text-danger">                                                        
-                                        <span class="fa-li"><i class="fa-solid fa-thumbs-down"></i></span>
-                                        <div class="row">
-                                            <div class="col-2">{{value.city.2}}%</div>
-                                            <div class="col-10">
-                                                {{value.city.1}} nie jest wsród preferowanych miast studiowania.
-                                            </div>
-                                        </div>
-                                    </li>
-                                {% endif %}
-                            {% endif %}
-                            {% if value.living_expenses != None %}
-                                    {% if value.living_expenses.1|living_expenses_below_avg %}
-                                    <li class="text-success">
-                                        <span class="fa-li"><i class="fa-solid fa-money-bill"></i></span>
-                                        <div class="row">
-                                            <div class="col-2">{{value.living_expenses.2}}%</div>
-                                            <div class="col-10">
-                                                Średni miesięczny koszt wynajęcia pokoju wynosi {{value.living_expenses.1}} zł.
-                                            </div>
-                                        </div>
-                                    </li>
-                                    {% else %}
-                                    <li class="text-danger">
-                                        <span class="fa-li"><i class="fa-solid fa-money-bill"></i></span>
-                                        <div class="row">
-                                            <div class="col-2">{{value.living_expenses.2}}%</div>
-                                            <div class="col-10">
-                                                Średni miesięczny koszt wynajęcia pokoju wynosi {{value.living_expenses.1}} zł.
-                                            </div>
-                                        </div>
-                                    </li>
-                                    {% endif %}
-                            {% endif %}
-                            {% if value.uni != None %}
-                                {% if value.uni.0 != 0 %}
-                                    <li class="text-success">
-                                        <span class="fa-li "><i class="fa-solid fa-thumbs-up"></i></span>
-                                        <div class="row">
-                                            <div class="col-2">{{value.uni.2}}%</div>
-                                            <div class="col-10">
-                                                {{value.uni.1}} jest wsród preferowanych uczelni.
-                                            </div>
-                                        </div>
-                                    </li>
-                                {% else %}
-                                    <li class="text-danger">
-                                        <span class="fa-li"><i class="fa-solid fa-thumbs-down"></i></span>
-                                        <div class="row">
-                                            <div class="col-2">{{value.uni.2}}%</div>
-                                            <div class="col-10">
-                                                {{value.uni.1}} nie jest wsród preferowanych uczelni.
-                                            </div>
-                                        </div>
-                                    </li>
-                                {% endif %}
-                            {% endif %}
-                            {% if value.uni_rank != None %}
-                                    {% if value.uni_rank.1 <= 10 %}
-                                        <li class="text-success">
-                                            <span class="fa-li"><i class="fa-solid fa-ranking-star"></i></span>
-                                            <div class="row">
-                                                <div class="col-2">{{value.uni_rank.2}}%</div>
-                                                <div class="col-10">
-                                                    Uczelnia zajmuje {{value.uni_rank.1}} miejsce w ogólnym rankingu uczelni.
-                                                </div>
-                                            </div>
-                                        </li>
-                                    {% else %}
-                                        <li class="text-danger">
-                                            <span class="fa-li"><i class="fa-solid fa-ranking-star"></i></span>
-                                            <div class="row">
-                                                <div class="col-2">{{value.uni_rank.2}}%</div>
-                                                <div class="col-10">
-                                                    Uczelnia zajmuje {{value.uni_rank.1}} miejsce w ogólnym rankingu uczelni.
-                                                </div>
-                                            </div>
-                                        </li>
-                                    {% endif %}
-                            {% endif %}
-                        </ul>
-                    </div>
-                </div> 
-            </div> 
-            <a class="btn btn-info" href='{{value.field.link_to_site}}'>Przejdź do strony kierunku</a>
+    <div class="row align-items-center"> <!-- Use align-items-center class here -->
+        <div class="col-1">
+            <i class="fa-solid fa-{{ forloop.counter }} fa-5x"></i>
         </div>
-    {% endfor %}
+        <div class="col pl-0">
+            <h2>{{ value.field.name }}</h2>
+            <h4>{{ value.field.university }}</h4>
+        </div>
+        <div class="col-4 align-self-lg-auto border border-3 border-success rounded bg-white" style="margin-top: 5px;">
+            <h4 class="text-center py-1 mb-0">Dopasowanie: {{ value.result }}%</h4>
+        </div>
+        
+        <div class="col-1"></div>
+    </div>
 </div>
-{% if results_rest %}
+    <div class="container border border-info border-1 rounded p-3">
+        <div class="row p-1">
+            <div class="col-md-6 mb-3">
+                <div class="border border-primary bg-white rounded p-2">
+                    <h5 class="mb-3">Informacje o kierunku:</h5>
+                    <div class="row">
+                        <div class="col-4">
+                            <h6>Typ studiów:</h6>
+                        </div>
+                        <div class="col text-left">
+                            {{value.field.degree}} | {{ value.field.study_mode }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4">
+                            <h6>Miasto studiowania:</h6>
+                        </div>
+                        <div class="col text-left">
+                            {{ value.field.id|return_city_of_given_field }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4">
+                            <h6>Ranking uczelni:</h6>
+                        </div>
+                        <div class="col text-left">
+                            <div class="mb-2">
+                                Ogólnie: {{ value.field.id|return_ranking_overall_of_given_uni }}
+                            </div>
+                            <div>
+                                W kategorii: {{ value.field.id|return_ranking_in_type_of_given_uni }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="border border-1 border-primary bg-white p-2 rounded">
+                    <h5>Przedmioty wymagane do rekrutacji:</h5>
+                    {% if value.field.id|return_subjects_with_alternatives_of_given_field == None %}
+                        {% if value.field.degree == 'Magister' %}
+                            Do rekrutacji wymagana jest ocena z egzaminu dyplomowego.
+                        {% else %}
+                            Do rekrutacji można się zgłosić z dowolnym przedmiotem.
+                        {% endif %}
+                    {% else %}
+                        <ul>
+                            {% for subject in value.field.id|return_subjects_with_alternatives_of_given_field %}
+                                <li>{{subject}} </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %} 
+                </div>    
+            </div>    
+        </div>
+        <div class="row p-1">
+            <div class="col-md-6 mb-3">
+                <div class="border border-1 border-secondary bg-white p-2 rounded">
+                    <h5>Opis kierunku:</h5>
+                    <p class='fw-lighter'>{{value.field.description}}</p>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="border border-1 border-warning bg-white p-2 rounded">
+                    <h5>Składowe oceny:</h5>
+                    <ul class="fa-ul">
+                        {% if value.characteristics != None %}
+                            {% if value.characteristics.3 %}
+                                <li class="text-success"><span class="fa-li"><i class="fa-solid fa-list-check"></i></span> 
+                                    <div class="row">
+                                        <div class="col-10">
+                                            {{value.characteristics.0}} na {{value.characteristics.1}} dopasowanych tematyk ze wszystkich {{value.characteristics.2}} przypisanych do kierunku.
+                                        </div>
+                                    </div>
+                                </li>
+                            {% else %}
+                                <li class="text-danger"><span class="fa-li"><i class="fa-solid fa-list-check"></i></span> 
+                                    <div class="row">
+                                        <div class="col-10">
+                                            {{value.characteristics.0}} na {{value.characteristics.1}} dopasowanych tematyk ze wszystkich {{value.characteristics.2}} przypisanych do kierunku.
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endif %}
+                        {% endif %}
+                        {% if value.city != None %}
+                            {% if value.city.0 != 0 %}
+                                <li class="text-success">
+                                    <span class="fa-li text-success-emphasis"><i class="fa-solid fa-thumbs-up"></i></span>
+                                    <div class="row">
+                                        <div class="col-10">
+                                            {{value.city.1}} jest wsród preferowanych miast studiowania.
+                                        </div>
+                                    </div>
+                                </li>
+                            {% else %}
+                                <li class="text-danger">                                                        
+                                    <span class="fa-li"><i class="fa-solid fa-thumbs-down"></i></span>
+                                    <div class="row">
+                                        <div class="col-10">
+                                            {{value.city.1}} nie jest wsród preferowanych miast studiowania.
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endif %}
+                        {% endif %}
+                        {% if value.living_expenses != None %}
+                                {% if value.living_expenses.1|living_expenses_below_avg %}
+                                <li class="text-success">
+                                    <span class="fa-li"><i class="fa-solid fa-money-bill"></i></span>
+                                    <div class="row">>
+                                        <div class="col-10">
+                                            Średni miesięczny koszt wynajęcia pokoju wynosi {{value.living_expenses.1}} zł.
+                                        </div>
+                                    </div>
+                                </li>
+                                {% else %}
+                                <li class="text-danger">
+                                    <span class="fa-li"><i class="fa-solid fa-money-bill"></i></span>
+                                    <div class="row">
+                                        <div class="col-10">
+                                            Średni miesięczny koszt wynajęcia pokoju wynosi {{value.living_expenses.1}} zł.
+                                        </div>
+                                    </div>
+                                </li>
+                                {% endif %}
+                        {% endif %}
+                        {% if value.uni != None %}
+                            {% if value.uni.0 != 0 %}
+                                <li class="text-success">
+                                    <span class="fa-li "><i class="fa-solid fa-thumbs-up"></i></span>
+                                    <div class="row">
+                                        <div class="col-10">
+                                            {{value.uni.1}} jest wsród preferowanych uczelni.
+                                        </div>
+                                    </div>
+                                </li>
+                            {% else %}
+                                <li class="text-danger">
+                                    <span class="fa-li"><i class="fa-solid fa-thumbs-down"></i></span>
+                                    <div class="row">
+                                        <div class="col-10">
+                                            {{value.uni.1}} nie jest wsród preferowanych uczelni.
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endif %}
+                        {% endif %}
+                        {% if value.uni_rank != None %}
+                                {% if value.uni_rank.1 <= 10 %}
+                                    <li class="text-success">
+                                        <span class="fa-li"><i class="fa-solid fa-ranking-star"></i></span>
+                                        <div class="row">
+                                            <div class="col-10">
+                                                Uczelnia zajmuje {{value.uni_rank.1}} miejsce w ogólnym rankingu uczelni.
+                                            </div>
+                                        </div>
+                                    </li>
+                                {% else %}
+                                    <li class="text-danger">
+                                        <span class="fa-li"><i class="fa-solid fa-ranking-star"></i></span>
+                                        <div class="row">
+                                            <div class="col-10">
+                                                Uczelnia zajmuje {{value.uni_rank.1}} miejsce w ogólnym rankingu uczelni.
+                                            </div>
+                                        </div>
+                                    </li>
+                                {% endif %}
+                        {% endif %}
+                    </ul>
+                </div>
+            </div> 
+        </div> 
+        <a class="btn btn-info" href='{{value.field.link_to_site}}'>Przejdź do strony kierunku</a>
+    </div>
+{% endfor %}
+{% if topsis_results_rest %}
     <h3>Reszta dopasowanych kierunków</h3>
     <div class="container mt-3 border border-secondary p-2 rounded">
-        {% for value in results_rest %}
+        {% for value in topsis_results_rest %}
             <div class="row jumbotron mb-2" data-bs-toggle="collapse" data-bs-target="#{{ value.field.id }}" aria-expanded="false">
                 <div class="col-4">
                     <h5 class="bold">{{value.field.name}}</h5>
@@ -232,7 +211,7 @@
                     {{value.field.degree}}
                     </h5>
                 </div>
-                <div class="col-2 justify-c ontent-end">
+                <div class="col-2 justify-content-end">
                     <h5>
                         Dopasowanie {{value.result}}%
                     </h5>
@@ -429,6 +408,3 @@
         {% endfor %}
     </div>
 {% endif %}
-    
-</div>
-{% endblock %}

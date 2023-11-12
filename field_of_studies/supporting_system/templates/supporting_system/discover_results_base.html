@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="jumbotron">
+    <h2 class="display-4">Znajdź kierunek studiów</h2>
+    <p class="lead">Poniżej znajdują się rezultaty przeprowadzonej przez system analizy. </p>
+    <hr class="my-4">
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-3">
+            <h3 class="mb-0">Wybierz algorytm</h3>
+        </div>
+        <div class="col-sm-9 d-flex justify-content-start align-items-left">
+            <div class="btn-group" role="group">
+                <input type="radio" class="btn-check visually-hidden" name="btnradio" id="WSM" autocomplete="off" checked>
+                <label class="btn btn-outline-primary btn-lg" for="WSM" onclick="showBlock('WSM')">
+                    <i class="fas fa-balance-scale me-2"></i> Suma warzona
+                </label>
+
+                <input type="radio" class="btn-check visually-hidden" name="btnradio" id="TOPSIS" autocomplete="off">
+                <label class="btn btn-outline-primary btn-lg" for="TOPSIS" onclick="showBlock('TOPSIS')">
+                    <i class="fas fa-chart-line me-2"></i> TOPSIS
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-3">
+        <h3>Najbardziej dopasowane kierunki</h3>
+    </div>
+</div>
+
+
+
+<div class="row g-2 py-3 row-cols-3 row-cols-lg-1">   
+    <div id="WSMBlock" style="display: block;">
+        {% include 'supporting_system/discover_result_wsm.html' %}
+    </div>
+    
+    <div id="TOPSISBlock" style="display: none;">
+        {% include 'supporting_system/discover_result_topsis.html' %}
+    </div>
+</div>
+
+<script>
+    function showBlock(blockId) {
+        if (blockId === 'WSM') {
+            document.getElementById('WSMBlock').style.display = 'block';
+            document.getElementById('TOPSISBlock').style.display = 'none';
+        } else if (blockId === 'TOPSIS') {
+            document.getElementById('WSMBlock').style.display = 'none';
+            document.getElementById('TOPSISBlock').style.display = 'block';
+        }
+    }
+</script>
+
+{% endblock %}

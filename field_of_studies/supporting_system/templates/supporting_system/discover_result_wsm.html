@@ -1,15 +1,5 @@
-{% extends "base.html" %}
 {% load tags %}
-{% block content %}
-
-<div class="jumbotron">
-    <h2 class="display-4">Znajdź kierunek studiów</h2>
-    <p class="lead">Poniżej znajdują się rezultaty przeprowadzonej przez system analizy. </p>
-    <hr class="my-4">
-    <h3>Najbardziej dopasowane kierunki</h3>
-</div>
-<div class="row g-2 py-4 row-cols-3 row-cols-lg-1">
-    {% for value in results_top3 %}
+    {% for value in wsm_results_top3 %}
     <div class="feature col">
         <div class="feature-icon bg-primary bg-gradient">
             <svg class="bi" width="1em" height="1em"><use xlink:href="#collection"></use></svg>
@@ -99,19 +89,19 @@
                                 {% if value.characteristics.3 %}
                                     <li class="text-success"><span class="fa-li"><i class="fa-solid fa-list-check"></i></span> 
                                         <div class="row">
-                                            <div class="col-2">{{value.characteristics.4}}%</div>
                                             <div class="col-10">
                                                 {{value.characteristics.0}} na {{value.characteristics.1}} dopasowanych tematyk ze wszystkich {{value.characteristics.2}} przypisanych do kierunku.
                                             </div>
+                                            <div class="col-2">{{value.characteristics.4}}%</div>
                                         </div>
                                     </li>
                                 {% else %}
                                     <li class="text-danger"><span class="fa-li"><i class="fa-solid fa-list-check"></i></span> 
                                         <div class="row">
-                                            <div class="col-2">{{value.characteristics.4}}%</div>
                                             <div class="col-10">
                                                 {{value.characteristics.0}} na {{value.characteristics.1}} dopasowanych tematyk ze wszystkich {{value.characteristics.2}} przypisanych do kierunku.
                                             </div>
+                                            <div class="col-2">{{value.characteristics.4}}%</div>
                                         </div>
                                     </li>
                                 {% endif %}
@@ -121,20 +111,20 @@
                                     <li class="text-success">
                                         <span class="fa-li text-success-emphasis"><i class="fa-solid fa-thumbs-up"></i></span>
                                         <div class="row">
-                                            <div class="col-2">{{value.city.2}}%</div>
                                             <div class="col-10">
                                                 {{value.city.1}} jest wsród preferowanych miast studiowania.
                                             </div>
+                                            <div class="col-2">{{value.city.2}}%</div>
                                         </div>
                                     </li>
                                 {% else %}
                                     <li class="text-danger">                                                        
                                         <span class="fa-li"><i class="fa-solid fa-thumbs-down"></i></span>
                                         <div class="row">
-                                            <div class="col-2">{{value.city.2}}%</div>
                                             <div class="col-10">
                                                 {{value.city.1}} nie jest wsród preferowanych miast studiowania.
                                             </div>
+                                            <div class="col-2">{{value.city.2}}%</div>
                                         </div>
                                     </li>
                                 {% endif %}
@@ -144,20 +134,20 @@
                                     <li class="text-success">
                                         <span class="fa-li"><i class="fa-solid fa-money-bill"></i></span>
                                         <div class="row">
-                                            <div class="col-2">{{value.living_expenses.2}}%</div>
                                             <div class="col-10">
                                                 Średni miesięczny koszt wynajęcia pokoju wynosi {{value.living_expenses.1}} zł.
                                             </div>
+                                            <div class="col-2">{{value.living_expenses.2}}%</div>
                                         </div>
                                     </li>
                                     {% else %}
                                     <li class="text-danger">
                                         <span class="fa-li"><i class="fa-solid fa-money-bill"></i></span>
                                         <div class="row">
-                                            <div class="col-2">{{value.living_expenses.2}}%</div>
                                             <div class="col-10">
                                                 Średni miesięczny koszt wynajęcia pokoju wynosi {{value.living_expenses.1}} zł.
                                             </div>
+                                            <div class="col-2">{{value.living_expenses.2}}%</div>
                                         </div>
                                     </li>
                                     {% endif %}
@@ -167,20 +157,20 @@
                                     <li class="text-success">
                                         <span class="fa-li "><i class="fa-solid fa-thumbs-up"></i></span>
                                         <div class="row">
-                                            <div class="col-2">{{value.uni.2}}%</div>
                                             <div class="col-10">
                                                 {{value.uni.1}} jest wsród preferowanych uczelni.
                                             </div>
+                                            <div class="col-2">{{value.uni.2}}%</div>
                                         </div>
                                     </li>
                                 {% else %}
                                     <li class="text-danger">
                                         <span class="fa-li"><i class="fa-solid fa-thumbs-down"></i></span>
                                         <div class="row">
-                                            <div class="col-2">{{value.uni.2}}%</div>
                                             <div class="col-10">
                                                 {{value.uni.1}} nie jest wsród preferowanych uczelni.
                                             </div>
+                                            <div class="col-2">{{value.uni.2}}%</div>
                                         </div>
                                     </li>
                                 {% endif %}
@@ -190,20 +180,20 @@
                                         <li class="text-success">
                                             <span class="fa-li"><i class="fa-solid fa-ranking-star"></i></span>
                                             <div class="row">
-                                                <div class="col-2">{{value.uni_rank.2}}%</div>
                                                 <div class="col-10">
                                                     Uczelnia zajmuje {{value.uni_rank.1}} miejsce w ogólnym rankingu uczelni.
                                                 </div>
+                                                <div class="col-2">{{value.uni_rank.2}}%</div>
                                             </div>
                                         </li>
                                     {% else %}
                                         <li class="text-danger">
                                             <span class="fa-li"><i class="fa-solid fa-ranking-star"></i></span>
                                             <div class="row">
-                                                <div class="col-2">{{value.uni_rank.2}}%</div>
                                                 <div class="col-10">
                                                     Uczelnia zajmuje {{value.uni_rank.1}} miejsce w ogólnym rankingu uczelni.
                                                 </div>
+                                                <div class="col-2">{{value.uni_rank.2}}%</div>
                                             </div>
                                         </li>
                                     {% endif %}
@@ -215,11 +205,10 @@
             <a class="btn btn-info" href='{{value.field.link_to_site}}'>Przejdź do strony kierunku</a>
         </div>
     {% endfor %}
-</div>
-{% if results_rest %}
+{% if wsm_results_rest %}
     <h3>Reszta dopasowanych kierunków</h3>
     <div class="container mt-3 border border-secondary p-2 rounded">
-        {% for value in results_rest %}
+        {% for value in wsm_results_rest %}
             <div class="row jumbotron mb-2" data-bs-toggle="collapse" data-bs-target="#{{ value.field.id }}" aria-expanded="false">
                 <div class="col-4">
                     <h5 class="bold">{{value.field.name}}</h5>
@@ -232,7 +221,7 @@
                     {{value.field.degree}}
                     </h5>
                 </div>
-                <div class="col-2 justify-c ontent-end">
+                <div class="col-2 justify-content-end">
                     <h5>
                         Dopasowanie {{value.result}}%
                     </h5>
@@ -307,19 +296,19 @@
                                             {% if value.characteristics.3 %}
                                                 <li class="text-success"><span class="fa-li"><i class="fa-solid fa-list-check"></i></span> 
                                                     <div class="row">
-                                                        <div class="col-2">{{value.characteristics.4}}%</div>
                                                         <div class="col-10">
                                                             {{value.characteristics.0}} na {{value.characteristics.1}} dopasowanych tematyk ze wszystkich {{value.characteristics.2}} przypisanych do kierunku.
                                                         </div>
+                                                        <div class="col-2">{{value.characteristics.4}}%</div>
                                                     </div>
                                                 </li>
                                             {% else %}
                                                 <li class="text-danger"><span class="fa-li"><i class="fa-solid fa-list-check"></i></span> 
                                                     <div class="row">
-                                                        <div class="col-2">{{value.characteristics.4}}%</div>
                                                         <div class="col-10">
                                                             {{value.characteristics.0}} na {{value.characteristics.1}} dopasowanych tematyk ze wszystkich {{value.characteristics.2}} przypisanych do kierunku.
                                                         </div>
+                                                        <div class="col-2">{{value.characteristics.4}}%</div>
                                                     </div>
                                                 </li>
                                             {% endif %}
@@ -329,20 +318,20 @@
                                                 <li class="text-success">
                                                     <span class="fa-li text-success-emphasis"><i class="fa-solid fa-thumbs-up"></i></span>
                                                     <div class="row">
-                                                        <div class="col-2">{{value.city.2}}%</div>
                                                         <div class="col-10">
                                                             {{value.city.1}} jest wsród preferowanych miast studiowania.
                                                         </div>
+                                                        <div class="col-2">{{value.city.2}}%</div>
                                                     </div>
                                                 </li>
                                             {% else %}
                                                 <li class="text-danger">                                                        
                                                     <span class="fa-li"><i class="fa-solid fa-thumbs-down"></i></span>
                                                     <div class="row">
-                                                        <div class="col-2">{{value.city.2}}%</div>
                                                         <div class="col-10">
                                                             {{value.city.1}} nie jest wsród preferowanych miast studiowania.
                                                         </div>
+                                                        <div class="col-2">{{value.city.2}}%</div>
                                                     </div>
                                                 </li>
                                             {% endif %}
@@ -352,20 +341,20 @@
                                                 <li class="text-success">
                                                     <span class="fa-li"><i class="fa-solid fa-money-bill"></i></span>
                                                     <div class="row">
-                                                        <div class="col-2">{{value.living_expenses.2}}%</div>
                                                         <div class="col-10">
                                                             Średni miesięczny koszt wynajęcia pokoju wynosi {{value.living_expenses.1}} zł.
                                                         </div>
+                                                        <div class="col-2">{{value.living_expenses.2}}%</div>
                                                     </div>
                                                 </li>
                                                 {% else %}
                                                 <li class="text-danger">
                                                     <span class="fa-li"><i class="fa-solid fa-money-bill"></i></span>
                                                     <div class="row">
-                                                        <div class="col-2">{{value.living_expenses.2}}%</div>
                                                         <div class="col-10">
                                                             Średni miesięczny koszt wynajęcia pokoju wynosi {{value.living_expenses.1}} zł.
                                                         </div>
+                                                        <div class="col-2">{{value.living_expenses.2}}%</div>
                                                     </div>
                                                 </li>
                                                 {% endif %}
@@ -375,20 +364,20 @@
                                                 <li class="text-success">
                                                     <span class="fa-li "><i class="fa-solid fa-thumbs-up"></i></span>
                                                     <div class="row">
-                                                        <div class="col-2">{{value.uni.2}}%</div>
                                                         <div class="col-10">
                                                             {{value.uni.1}} jest wsród preferowanych uczelni.
                                                         </div>
+                                                        <div class="col-2">{{value.uni.2}}%</div>
                                                     </div>
                                                 </li>
                                             {% else %}
                                                 <li class="text-danger">
                                                     <span class="fa-li"><i class="fa-solid fa-thumbs-down"></i></span>
                                                     <div class="row">
-                                                        <div class="col-2">{{value.uni.2}}%</div>
                                                         <div class="col-10">
                                                             {{value.uni.1}} nie jest wsród preferowanych uczelni.
                                                         </div>
+                                                        <div class="col-2">{{value.uni.2}}%</div>
                                                     </div>
                                                 </li>
                                             {% endif %}
@@ -398,20 +387,20 @@
                                                     <li class="text-success">
                                                         <span class="fa-li"><i class="fa-solid fa-ranking-star"></i></span>
                                                         <div class="row">
-                                                            <div class="col-2">{{value.uni_rank.2}}%</div>
                                                             <div class="col-10">
                                                                 Uczelnia zajmuje {{value.uni_rank.1}} miejsce w ogólnym rankingu uczelni.
                                                             </div>
+                                                            <div class="col-2">{{value.uni_rank.2}}%</div>
                                                         </div>
                                                     </li>
                                                 {% else %}
                                                     <li class="text-danger">
                                                         <span class="fa-li"><i class="fa-solid fa-ranking-star"></i></span>
                                                         <div class="row">
-                                                            <div class="col-2">{{value.uni_rank.2}}%</div>
                                                             <div class="col-10">
                                                                 Uczelnia zajmuje {{value.uni_rank.1}} miejsce w ogólnym rankingu uczelni.
                                                             </div>
+                                                            <div class="col-2">{{value.uni_rank.2}}%</div>
                                                         </div>
                                                     </li>
                                                 {% endif %}
@@ -429,6 +418,3 @@
         {% endfor %}
     </div>
 {% endif %}
-    
-</div>
-{% endblock %}
