@@ -608,92 +608,143 @@ def DiscoverView(request):
             return HttpResponseRedirect(reverse('DiscoverView_results'))
 
 
-def WeightedSumResult(request):
+def WeightedSumResult(characteristics_values, city_values, uni_values, uni_rank_values, living_expenses_values, 
+                        characteristics_score, city_score, uni_score, uni_rank_score, living_expenses_score,
+                        fields_list):
     """Result view for a DSS. It calculates the individual fit score for each study field.
     The score is a weighted sum of points that given subject got out of all that could be possible
     to achieve (all which were displayed).
     """
     
     results_of_fields = defaultdict(float)
-    city_score = request.session['criteria']['city']
-    uni_score = request.session['criteria']['uni']
-    uni_rank_score = request.session['criteria']['uni_rank']
-    characteristics_score = request.session['criteria']['characteristics']
-    living_expenses_score = request.session['criteria']['living_expenses']
-    if characteristics_score != 0:
-        shown_characteristics = []
-        shown_characteristics = list(request.session['approved_attributes'])
-        shown_characteristics.extend(list(request.session['excluded_attributes']))
-    #print(f'Kryteria: {city_score} {uni_score} {uni_rank_score} {characteristics_score} {living_expenses_score} | Łącznie {city_score + uni_score + uni_rank_score + characteristics_score + living_expenses_score}')
     # Calculating final score for each field
-    for field in request.session['filtered_fields']:
-        characteristics_result = 0
-        cities_result = 0
-        uni_result = 0
-        uni_rank_result = 0
-        living_expenses_result = 0
+    for i, field in enumerate(fields_list):
+        characteristics_result = characteristics_values[i]*characteristics_score
+        city_result = city_values[i]*city_score
+        uni_result = uni_values[i]*uni_score
+        uni_rank_result = uni_rank_values[i]*uni_rank_score
+        living_expenses_result = living_expenses_values[i]*living_expenses_score
 
-        if characteristics_score != 0:
-            approved_characteristics_of_field = Characteristics.objects.filter(field_of_study=field, attribute__id__in=request.session['approved_attributes']).values_list('fit',flat=True)
-            shown_characteristics_of_field = Characteristics.objects.filter(field_of_study=field, attribute__id__in=shown_characteristics).values_list('fit',flat=True)
-            characteristics_result = round(sum(approved_characteristics_of_field)/sum(shown_characteristics_of_field),2)
-        if city_score != 0:
-            if str(Field_of_Study.objects.get(id=field).university.city) in request.session['cities']:
-                cities_result = 1
-        
-        if uni_score != 0:
-            if str(Field_of_Study.objects.get(id=field).university.id) in request.session['university']:
-                uni_result = 1  
-        
-        if uni_rank_score != 0:
-            uni_rank_result = round(1/Field_of_Study.objects.get(id=field).university.rank_overall,2)
-        
-        if living_expenses_score != 0:
-            uni = Field_of_Study.objects.get(id=field).university
-            avg_room_price = RoomPrice.objects.get(city=uni).avg_room_price/RoomPrice.objects.order_by('avg_room_price').first().avg_room_price
-            living_expenses_result = round(1/avg_room_price,2)
+        characteristics_percentage = round(characteristics_result*100,2)
+        city_percentage = round(city_result*100,2)
+        uni_percentage = round(uni_result*100,2)
+        uni_rank_percentage = round(uni_rank_result*100,2)
+        living_expenses_percentage = round(living_expenses_result*100,2)
 
-        city_precentage = round(cities_result*city_score*100,2)
-        uni_precentage = round(uni_result*uni_score*100,2)
-        uni_rank_precentage = round(uni_rank_result*uni_rank_score*100,2)
-        characteristics_precentage = round(characteristics_result*characteristics_score*100,2)
-        living_expenses_precentage = round(living_expenses_result*living_expenses_score*100,2)
-
-        result = city_precentage + uni_precentage + uni_rank_precentage + characteristics_precentage + living_expenses_precentage
+        result = characteristics_percentage + city_percentage + uni_percentage + uni_rank_percentage + living_expenses_percentage
         results_of_fields[field] = {
             'result':round(result,2),
             'characteristics':characteristics_result,
-            'characteristics_percentage':characteristics_precentage,
-            'city':cities_result,
-            'city_percentage':city_precentage,
+            'characteristics_percentage':characteristics_percentage,
+            'city':city_result,
+            'city_percentage':city_percentage,
             'uni':uni_result,
-            'uni_percentage':uni_precentage,
+            'uni_percentage':uni_percentage,
             'uni_rank':uni_rank_result,
-            'uni_rank_percentage':uni_rank_precentage,
+            'uni_rank_percentage':uni_rank_percentage,
             'living_expenses':living_expenses_result,
-            'living_expenses_percentage':living_expenses_precentage,
+            'living_expenses_percentage':living_expenses_percentage,
         }
         #print(Field_of_Study.objects.get(id=field).name,results_of_fields[field])
-    return dict(sorted(results_of_fields.items(), key=lambda item: item[1]['result'], reverse=True)), shown_characteristics
+    return dict(sorted(results_of_fields.items(), key=lambda item: item[1]['result'], reverse=True))
 
-def TOPSISResult(request):
+def TOPSISResult(characteristics_values, city_values, uni_values, uni_rank_values, living_expenses_values, 
+                 characteristics_score, city_score, uni_score, uni_rank_score, living_expenses_score,
+                 fields_list):
     results_of_fields = defaultdict(float)
-    city_score = request.session['criteria']['city']
-    uni_score = request.session['criteria']['uni']
-    uni_rank_score = request.session['criteria']['uni_rank']
-    characteristics_score = request.session['criteria']['characteristics']
-    living_expenses_score = request.session['criteria']['living_expenses']
-    if characteristics_score != 0:
-        shown_characteristics = []
-        shown_characteristics = list(request.session['approved_attributes'])
-        shown_characteristics.extend(list(request.session['excluded_attributes']))
 
-    # Calculating values of cirteria
+    # Vector normalization and weight calculation
+    characteriris_values_normalized = []
+    city_values_normalized = []
+    uni_values_normalized = []
+    uni_rank_values_normalized = []
+    living_expenses_values_normalized = []
+
+    for i in range(len(fields_list)):
+        temp_characteristics_value = characteristics_values[i]/sum(characteristics_values)
+        temp_characteristics_value = temp_characteristics_value*characteristics_score
+        characteriris_values_normalized.append(temp_characteristics_value)
+        if sum(city_values) != 0:
+            temp_city_value = city_values[i]/sum(city_values)
+            temp_city_value = temp_city_value*city_score
+        else:
+            temp_city_value = 0
+        city_values_normalized.append(temp_city_value)
+
+        if sum(uni_values) != 0:
+            temp_uni_value = uni_values[i]/sum(uni_values)
+            temp_uni_value = temp_uni_value*uni_score
+        else:
+            temp_uni_value = 0
+        uni_values_normalized.append(temp_uni_value)
+
+        if sum(uni_rank_values) != 0: 
+            temp_uni_rank_value = uni_rank_values[i]/sum(uni_rank_values)
+            temp_uni_rank_value = temp_uni_rank_value*uni_rank_score
+        else:
+            temp_uni_rank_value = 0
+        uni_rank_values_normalized.append(temp_uni_rank_value)
+
+        if sum(living_expenses_values) != 0:
+            temp_living_expenses_value = living_expenses_values[i]/sum(living_expenses_values)
+            temp_living_expenses_value = temp_living_expenses_value*living_expenses_score
+        else:
+            temp_living_expenses_value = 0
+        living_expenses_values_normalized.append(temp_living_expenses_value)
+
+    # Decision matrix
+    decision_matrix = np.column_stack((characteriris_values_normalized,city_values_normalized,
+                                       uni_values_normalized,uni_rank_values_normalized,living_expenses_values_normalized))
+    #print(decision_matrix)
+
+    # Ideal and anti-ideal solutions
+    ideal_values = np.max(decision_matrix, axis=0)
+    anti_ideal_values = np.min(decision_matrix, axis=0)
+    # print(f'Kolejność kolumn: charakterystyki, miasto, uniwersytet, ranking, koszty utrzymania')
+    # print(f'ideal: {ideal_values}, anti-ideal: {anti_ideal_values}')
+
+    for i, field in enumerate(fields_list):
+        #Calculating distances to ideal and anti-ideal solutions
+        distance_to_ideal = sum(np.sqrt((decision_matrix[i][j] - ideal_values[j])**2) for j in range(len(ideal_values)))
+        distance_to_anti_ideal = sum(np.sqrt((decision_matrix[i][j] - anti_ideal_values[j])**2) for j in range(len(anti_ideal_values)))
+
+        #Calculating TOPSIS score for given field
+        topsis_score = distance_to_anti_ideal / (distance_to_ideal + distance_to_anti_ideal)
+
+        #print(f'Kierunek: {Field_of_Study.objects.get(id=field).name} Wynik:{topsis_score} Dystans do idealnego: {distance_to_ideal} Dystans do antyidealnego: {distance_to_anti_ideal}')
+
+        results_of_fields[field] = {
+            'result': round(topsis_score * 100, 2),
+            'characteristics': characteristics_values[i],
+            'city': city_values[i],
+            'uni': uni_values[i],
+            'uni_rank': uni_rank_values[i],
+            'living_expenses': living_expenses_values[i],
+        }    
+    return dict(sorted(results_of_fields.items(), key=lambda item: item[1]['result'], reverse=True))
+
+def DiscoverResultsView(request):
+    """Result view for a DSS. It calculates the individual fit score for each study field.
+    The score is a percentage of points that given subject got out of all th
+    at could be possible
+    to achieve (all which were displayed).
+    """
     characteriris_values = []
     city_values = []
     uni_values = []
     uni_rank_values = []
     living_expenses_values = []
+
+    criteria_scores = request.session['criteria']
+    city_score = request.session['criteria']['city']
+    uni_score = request.session['criteria']['uni']
+    uni_rank_score = request.session['criteria']['uni_rank']
+    characteristics_score = request.session['criteria']['characteristics']
+    living_expenses_score = request.session['criteria']['living_expenses']
+    if characteristics_score != 0:
+        shown_characteristics = []
+        shown_characteristics = list(request.session['approved_attributes'])
+        shown_characteristics.extend(list(request.session['excluded_attributes']))
     for field in request.session['filtered_fields']:
         characteristics_result = 0
         cities_result = 0
@@ -727,85 +778,21 @@ def TOPSISResult(request):
         uni_rank_values.append(uni_rank_result)
         living_expenses_values.append(living_expenses_result)
 
-    # Vector normalization and weight calculation
-
-    characteriris_values_normalized = []
-    city_values_normalized = []
-    uni_values_normalized = []
-    uni_rank_values_normalized = []
-    living_expenses_values_normalized = []
-
-    for i in range(len(request.session['filtered_fields'])):
-        temp_characteristics_value = characteriris_values[i]/sum(characteriris_values)
-        temp_characteristics_value = temp_characteristics_value*characteristics_score
-        characteriris_values_normalized.append(temp_characteristics_value)
-
-        temp_city_value = city_values[i]/sum(city_values)
-        temp_city_value = temp_city_value*city_score
-        city_values_normalized.append(temp_city_value)
-
-        temp_uni_value = uni_values[i]/sum(uni_values)
-        temp_uni_value = temp_uni_value*uni_score
-        uni_values_normalized.append(temp_uni_value)
-
-        temp_uni_rank_value = uni_rank_values[i]/sum(uni_rank_values)
-        temp_uni_rank_value = temp_uni_rank_value*uni_rank_score
-        uni_rank_values_normalized.append(temp_uni_rank_value)
-
-        temp_living_expenses_value = living_expenses_values[i]/sum(living_expenses_values)
-        temp_living_expenses_value = temp_living_expenses_value*living_expenses_score
-        living_expenses_values_normalized.append(temp_living_expenses_value)
-
-    # Decision matrix
-    decision_matrix = np.column_stack((characteriris_values_normalized,city_values_normalized,
-                                       uni_values_normalized,uni_rank_values_normalized,living_expenses_values_normalized))
-
-    # Ideal and anti-ideal solutions
-    ideal_values = np.max(decision_matrix, axis=0)
-    anti_ideal_values = np.min(decision_matrix, axis=0)
-    print(f'Kolejność kolumn: charakterystyki, miasto, uniwersytet, ranking, koszty utrzymania')
-    print(f'ideal: {ideal_values}, anti-ideal: {anti_ideal_values}')
-
-    # Calculate the distance to the ideal and anti-ideal solutions
-    distance_to_ideal = np.linalg.norm(decision_matrix - ideal_values, axis=1)
-    distance_to_anti_ideal = np.linalg.norm(decision_matrix - anti_ideal_values, axis=1)
-    for i, field in enumerate(request.session['filtered_fields']):
-        print(f'Kierunek: {Field_of_Study.objects.get(id=field).name} Dystans do idealnego: {distance_to_ideal[i]} Dystans do antyidealnego: {distance_to_anti_ideal[i]}')
-
-    # Calculate the TOPSIS score
-    topsis_score = distance_to_anti_ideal / (distance_to_ideal + distance_to_anti_ideal)
-
-    #print(f'TOPSIS score: {topsis_score}')
-    for i, field in enumerate(request.session['filtered_fields']):
-        results_of_fields[field] = {
-            'result': round(topsis_score[i] * 100, 2),
-            'characteristics': characteriris_values[i],
-            'city': city_values[i],
-            'uni': uni_values[i],
-            'uni_rank': uni_rank_values[i],
-            'living_expenses': living_expenses_values[i],
-        }    
-    sorted_results = dict(sorted(results_of_fields.items(), key=lambda item: item[1]['result'], reverse=True))
-    return sorted_results, shown_characteristics
-
-def DiscoverResultsView(request):
-    """Result view for a DSS. It calculates the individual fit score for each study field.
-    The score is a percentage of points that given subject got out of all th
-    at could be possible
-    to achieve (all which were displayed).
-    """
-    criteria_scores = request.session['criteria']
-    wsm_results_of_fields, shown_characteristics = WeightedSumResult(request)
-    topsis_results_of_fields, shown_characteristics = TOPSISResult(request)
+    wsm_results_of_fields = WeightedSumResult(characteriris_values, city_values, uni_values, uni_rank_values, living_expenses_values,
+                                                                     characteristics_score, city_score, uni_score, uni_rank_score, living_expenses_score,
+                                                                     request.session['filtered_fields'])
+    topsis_results_of_fields = TOPSISResult(characteriris_values, city_values, uni_values, uni_rank_values, living_expenses_values,
+                                                                     characteristics_score, city_score, uni_score, uni_rank_score, living_expenses_score,
+                                                                     request.session['filtered_fields'])
 
 
     wsm_results_top3 = []
     wsm_results_rest = []
-    print('='*50,' WSM  ','='*50)
-    for key, value in wsm_results_of_fields.items():
-        print(f'Kierunek {Field_of_Study.objects.get(id=key).name} otrzymał {value["result"]} punktów. ')
-        print(f'Charakterystyki: {value["characteristics"]} ({value["characteristics_percentage"]}%) Miasto: {value["city"]} ({value["city_percentage"]}%) Uniwersytet: {value["uni"]} ({value["uni_percentage"]}%) Ranking: {value["uni_rank"]} ({value["uni_rank_percentage"]}%) Koszty życia: {value["living_expenses"]} ({value["living_expenses_percentage"]}%)')
-        print('='*50)
+    # print('='*50,' WSM  ','='*50)
+    # for key, value in wsm_results_of_fields.items():
+    #     print(f'Kierunek {Field_of_Study.objects.get(id=key).name} otrzymał {value["result"]} punktów. ')
+    #     print(f'Charakterystyki: {value["characteristics"]} ({value["characteristics_percentage"]}%) Miasto: {value["city"]} ({value["city_percentage"]}%) Uniwersytet: {value["uni"]} ({value["uni_percentage"]}%) Ranking: {value["uni_rank"]} ({value["uni_rank_percentage"]}%) Koszty życia: {value["living_expenses"]} ({value["living_expenses_percentage"]}%)')
+    #     print('='*50)
     for key, value in wsm_results_of_fields.items():
         
         temp_data_to_display = {
@@ -868,11 +855,11 @@ def DiscoverResultsView(request):
 
     topsis_results_top3 = []
     topsis_results_rest = []
-    print('='*50,'TOPSIS','='*50)
-    for key, value in topsis_results_of_fields.items():
-        print(f'Kierunek {Field_of_Study.objects.get(id=key).name} otrzymał {value["result"]} punktów. ')
-        print(f'Charakterystyki: {value["characteristics"]} Miasto: {value["city"]} Uniwersytet: {value["uni"]} Ranking: {value["uni_rank"]} Koszty życia: {value["living_expenses"]}')
-        print('='*50)
+    # print('='*50,'TOPSIS','='*50)
+    # for key, value in topsis_results_of_fields.items():
+    #     print(f'Kierunek {Field_of_Study.objects.get(id=key).name} otrzymał {value["result"]} punktów. ')
+    #     print(f'Charakterystyki: {value["characteristics"]} Miasto: {value["city"]} Uniwersytet: {value["uni"]} Ranking: {value["uni_rank"]} Koszty życia: {value["living_expenses"]}')
+    #     print('='*50)
     for key, value in topsis_results_of_fields.items():
         temp_data_to_display = {
             'field':Field_of_Study.objects.get(id=key),
