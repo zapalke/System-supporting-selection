@@ -13,21 +13,24 @@ class Field_of_Study(models.Model):
         ('Niestacjonarne', 'Niestacjonarne'),
         ('Stacjonarne i niestacjonarne', 'Stacjonarne i niestacjonarne')
     )
-    name = models.CharField(max_length=100, default='Nieznane studia')
-    degree = models.CharField(max_length=20, choices=DEGREES)
-    study_mode = models.CharField(max_length=30, choices=STUDY_MODE)
-    language = models.CharField(max_length=20,default='Polski')
-    university = models.ForeignKey("University", on_delete=models.CASCADE, to_field='id')
-    description = models.TextField(max_length=1000)
-    link_to_site = models.CharField(max_length=255, default='Brak linku do strony')
+    name = models.CharField(max_length=100, default='Nieznane studia')                      # Nazwa kierunku studiów
+    degree = models.CharField(max_length=20, choices=DEGREES)                               # Stopień studiów określony w zmiennej DEGREES
+    study_mode = models.CharField(max_length=30, choices=STUDY_MODE)                        # Tryb studiów określony w zmiennej STUDY_MODE
+    language = models.CharField(max_length=20,default='Polski')                             # Język studiów
+    university = models.ForeignKey("University", on_delete=models.CASCADE, to_field='id')   # Klucz obcy do tabeli University, określa uczelnię na której odbywają się studia
+    description = models.TextField(max_length=1000)                                         # Opis kierunku studiów
+    link_to_site = models.CharField(max_length=255, default='Brak linku do strony')         # Link do strony kierunku studiów
 
     def save(self, *args, **kwargs):
+        # Funkcja zapisująca obiekt do bazy danych.
         super().save(*args, **kwargs)
 
     class Meta:
+        # Klasa Meta określająca nazwę tabeli w bazie danych.
         verbose_name_plural = 'Field of Studies'
 
     def __str__(self):
+        # Funkcja zwracająca jak ma być wyświetlany obiekt w panelu administratora.
         return f'{self.name} - {self.university.name}'    
 
 
