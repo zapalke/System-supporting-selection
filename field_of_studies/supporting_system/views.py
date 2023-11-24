@@ -265,20 +265,21 @@ def filter_by_subjects(queryset, subjects):
         queryset: Filtered queryset
     """
     allowed_id = []
-    for field in queryset:
-        exam_subjects_for_field = Exam_Subjects.objects.filter(field_of_study=field.id).all()
-        exam_subjects_for_field_checklist = []
-        for sub in exam_subjects_for_field:
-            if str(sub.subject.id) in subjects:
-                exam_subjects_for_field_checklist.append(1)
+    for field in queryset:                                                                                                  
+        exam_subjects_for_field = Exam_Subjects.objects.filter(field_of_study=field.id).all()           # Lista wszystkich przedmiotów wymaganych do podjęcia studiów na danym kierunku.
+        exam_subjects_for_field_checklist = []                                                          # Lista przedmiotów, które zostały spełnione przez użytkownika.                
+        for sub in exam_subjects_for_field:                                                             # Przejście przez listę wymaganych przedmiotów dla dnaego kierunku.
+            if str(sub.subject.id) in subjects:                                                         # Jeżeli przedmiot jest w liście wybranych przez użytkownika to 
+                exam_subjects_for_field_checklist.append(1)                                             # zapisywany jest o tym informacja.
             else:
-                alternative_exam_subjects_for_field = Alternative_Exam_Subjects.objects.filter(main_subject=sub.id).all()
+                alternative_exam_subjects_for_field = Alternative_Exam_Subjects.objects.filter(
+                    main_subject=sub.id).all()                                                          # W przeciwynym wypadku sprawdzane są przedmioty alternatywne dla danego przedmiotu.
                 for alternative_subject in alternative_exam_subjects_for_field:
                     if str(alternative_subject.subject.id) in subjects:
                         exam_subjects_for_field_checklist.append(1)
                         break
-        if len(exam_subjects_for_field_checklist) == exam_subjects_for_field.count():
-            allowed_id.append(field.id)
+        if len(exam_subjects_for_field_checklist) == exam_subjects_for_field.count():                   # Jeżeli ilość przedmiotów spełnionych przez użytkownika jest równa. 
+            allowed_id.append(field.id)                                                                 # ilości wymaganych przedmiotów to kierunek jest dodawany do listy dozwolonych.
     return allowed_id
                 
                 
@@ -611,9 +612,10 @@ def DiscoverView(request):
 def WeightedSumResult(characteristics_values, city_values, uni_values, uni_rank_values, living_expenses_values, 
                         characteristics_score, city_score, uni_score, uni_rank_score, living_expenses_score,
                         fields_list):
-    """Result view for a DSS. It calculates the individual fit score for each study field.
-    The score is a weighted sum of points that given subject got out of all that could be possible
-    to achieve (all which were displayed).
+    """Function that calculates results based on Weighted Sum method. It calculates the final score for each field
+    by summing up the weighted values of each metric. 
+    Returns: results_of_fields (dict): Dictionary with results for each field
+
     """
     
     results_of_fields = defaultdict(float)
@@ -651,6 +653,14 @@ def WeightedSumResult(characteristics_values, city_values, uni_values, uni_rank_
 def TOPSISResult(characteristics_values, city_values, uni_values, uni_rank_values, living_expenses_values, 
                  characteristics_score, city_score, uni_score, uni_rank_score, living_expenses_score,
                  fields_list):
+    """Function that calculates results based on TOPSIS method. It uses the following steps:
+    1. Normalize the decision matrix
+    2. Calculate the weighted normalized decision matrix
+    3. Determine the ideal and anti-ideal solutions
+    4. Calculate the separation measures
+    5. Calculate the relative closeness to the ideal solution
+    Returns: results_of_fields (dict): Dictionary with results for each field
+    """
     results_of_fields = defaultdict(float)
 
     # Vector normalization and weight calculation
