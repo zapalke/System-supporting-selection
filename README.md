@@ -10,10 +10,8 @@ To install and run the application, you need to have Python 3.11 or higher and p
 2. Navigate to the project directory: `cd System-supporting-selection`
 3. Create and activate a virtual environment: `python -m venv venv` and `source venv/bin/activate` / `venv/Scripts/activate` (Windows)
 4. Install the required packages: `pip install -r requirements.txt`
-6. Run the migrations: `python manage.py migrate`
-7. Load the data from the data.json file: `python manage.py loaddata data.json`
-8. Run the server: `python manage.py runserver`
-9. Open the application in your browser: `http://127.0.0.1:8000/`
+5. Run the server: `python manage.py runserver`
+6. Open the application in your browser: `http://127.0.0.1:8000/`
 
 ## Usage and features
 
@@ -38,10 +36,8 @@ Aby zainstalować i uruchomić aplikację, musisz mieć zainstalowane Python 3.1
 2. Przejdź do katalogu projektu: `cd System-supporting-selection`
 3. Utwórz i aktywuj wirtualne środowisko: `python -m venv venv` i `source venv/bin/activate` (Linux) / `venv/Scripts/activate` (Windows)
 4. Zainstaluj wymagane pakiety: `pip install -r requirements.txt`
-6. Wykonaj migracje: `python manage.py migrate`
-7. Załaduj dane z pliku data.json: `python manage.py loaddata data.json`
-8. Uruchom serwer: `python manage.py runserver`
-9. Otwórz aplikację w przeglądarce: `http://127.0.0.1:8000/`
+5. Uruchom serwer: `python manage.py runserver`
+6. Otwórz aplikację w przeglądarce: `http://127.0.0.1:8000/`
 
 ## Użytkowanie i funkcje
 
