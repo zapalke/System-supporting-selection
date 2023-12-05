@@ -6,21 +6,40 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('supporting_system', '0005_rename_attribiutes_attributes_and_more'),
+        ("supporting_system", "0005_rename_attribiutes_attributes_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='RoomPrice',
+            name="RoomPrice",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('avg_room_price', models.IntegerField(default=0, validators=[django.core.validators.MinValueValidator(0)])),
-                ('city', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='supporting_system.university')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "avg_room_price",
+                    models.IntegerField(
+                        default=0,
+                        validators=[django.core.validators.MinValueValidator(0)],
+                    ),
+                ),
+                (
+                    "city",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="supporting_system.university",
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'Room Prices',
+                "verbose_name_plural": "Room Prices",
             },
         ),
     ]

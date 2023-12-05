@@ -5,95 +5,226 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Attribiutes',
+            name="Attribiutes",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('attribiute', models.CharField(default='Nieznana cecha', max_length=120)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "attribiute",
+                    models.CharField(default="Nieznana cecha", max_length=120),
+                ),
             ],
             options={
-                'verbose_name_plural': 'Attribiutes',
+                "verbose_name_plural": "Attribiutes",
             },
         ),
         migrations.CreateModel(
-            name='Subjects',
+            name="Subjects",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('subject', models.CharField(default='Nieznany Przedmiot', max_length=80)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "subject",
+                    models.CharField(default="Nieznany Przedmiot", max_length=80),
+                ),
             ],
             options={
-                'verbose_name_plural': 'Subjects',
+                "verbose_name_plural": "Subjects",
             },
         ),
         migrations.CreateModel(
-            name='University',
+            name="University",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(default='Nieznany Uniwersytet', max_length=200)),
-                ('city', models.CharField(default='Nieznane Miasto', max_length=50)),
-                ('type', models.CharField(default='Nieznana', max_length=30)),
-                ('rank_overall', models.IntegerField(default=0)),
-                ('rank_in_type', models.IntegerField(default=0)),
-                ('link_to_site', models.CharField(default='Brak linku do strony', max_length=255)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(default="Nieznany Uniwersytet", max_length=200),
+                ),
+                ("city", models.CharField(default="Nieznane Miasto", max_length=50)),
+                ("type", models.CharField(default="Nieznana", max_length=30)),
+                ("rank_overall", models.IntegerField(default=0)),
+                ("rank_in_type", models.IntegerField(default=0)),
+                (
+                    "link_to_site",
+                    models.CharField(default="Brak linku do strony", max_length=255),
+                ),
             ],
             options={
-                'verbose_name_plural': 'Universities',
+                "verbose_name_plural": "Universities",
             },
         ),
         migrations.CreateModel(
-            name='Field_of_Study',
+            name="Field_of_Study",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(default='Nieznane studia', max_length=100)),
-                ('degree', models.CharField(choices=[('Licencjat', 'Licencjat'), ('Inżynier', 'Inżynier'), ('Magister', 'Magister'), ('Jednolite', 'Jednolite')], max_length=20)),
-                ('study_mode', models.CharField(choices=[('Stacjonarne', 'Stacjonarne'), ('Niestacjonarne', 'Niestacjonarne')], max_length=15)),
-                ('language', models.CharField(default='Polski', max_length=20)),
-                ('descritpion', models.TextField(max_length=1000)),
-                ('link_to_site', models.CharField(default='Brak linku do strony', max_length=255)),
-                ('university', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='supporting_system.university')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(default="Nieznane studia", max_length=100)),
+                (
+                    "degree",
+                    models.CharField(
+                        choices=[
+                            ("Licencjat", "Licencjat"),
+                            ("Inżynier", "Inżynier"),
+                            ("Magister", "Magister"),
+                            ("Jednolite", "Jednolite"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "study_mode",
+                    models.CharField(
+                        choices=[
+                            ("Stacjonarne", "Stacjonarne"),
+                            ("Niestacjonarne", "Niestacjonarne"),
+                        ],
+                        max_length=15,
+                    ),
+                ),
+                ("language", models.CharField(default="Polski", max_length=20)),
+                ("descritpion", models.TextField(max_length=1000)),
+                (
+                    "link_to_site",
+                    models.CharField(default="Brak linku do strony", max_length=255),
+                ),
+                (
+                    "university",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="supporting_system.university",
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'Field of Studies',
+                "verbose_name_plural": "Field of Studies",
             },
         ),
         migrations.CreateModel(
-            name='Exam_Subjects',
+            name="Exam_Subjects",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('field_of_study', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='supporting_system.field_of_study')),
-                ('subject', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='supporting_system.subjects')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "field_of_study",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="supporting_system.field_of_study",
+                    ),
+                ),
+                (
+                    "subject",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="supporting_system.subjects",
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'Exam Subjects',
+                "verbose_name_plural": "Exam Subjects",
             },
         ),
         migrations.CreateModel(
-            name='Characteristics',
+            name="Characteristics",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('attribiute', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='supporting_system.attribiutes')),
-                ('field_of_study', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='supporting_system.field_of_study')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "attribiute",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="supporting_system.attribiutes",
+                    ),
+                ),
+                (
+                    "field_of_study",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="supporting_system.field_of_study",
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'Characteristics',
+                "verbose_name_plural": "Characteristics",
             },
         ),
         migrations.CreateModel(
-            name='Alternative_Exam_Subjects',
+            name="Alternative_Exam_Subjects",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('main_subject', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='supporting_system.exam_subjects')),
-                ('subject', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='supporting_system.subjects')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "main_subject",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="supporting_system.exam_subjects",
+                    ),
+                ),
+                (
+                    "subject",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="supporting_system.subjects",
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'Alternative Exam Subjects',
+                "verbose_name_plural": "Alternative Exam Subjects",
             },
         ),
     ]
